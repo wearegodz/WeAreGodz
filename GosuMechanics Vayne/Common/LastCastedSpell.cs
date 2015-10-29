@@ -1,9 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows.Input;
+using SharpDX;
+using System.Threading.Tasks;
 using EloBuddy;
-using EloBuddy.SDK;
 
-namespace GosuMechanics_Vayne
+namespace GosuMechanics_Vayne.Common
 {
     public class LastCastedSpellEntry
     {

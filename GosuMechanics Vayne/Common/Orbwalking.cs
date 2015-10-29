@@ -14,7 +14,7 @@ using EloBuddy.SDK.Rendering;
 using SharpDX.Direct3D;
 using Color = System.Drawing.Color;
 
-namespace GosuMechanics_Vayne
+namespace GosuMechanics_Vayne.Common
 {
 
     /// <summary>
@@ -658,11 +658,11 @@ namespace GosuMechanics_Vayne
                     ObjectManager.Get<Obj_AI_Minion>()
                         .Any(
                             minion =>
-                                minion.IsValidTarget() && minion.Team != GameObjectTeam.Neutral &&
+                                minion.IsValidTarget() && InAutoAttackRange(minion) && minion.Team != GameObjectTeam.Neutral &&
                                 InAutoAttackRange(minion) && MinionManager.IsMinion(minion, false) &&
                                 HealthPrediction.LaneClearHealthPrediction(
                                     minion, (int)((Player.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay) <=
-                                Player.GetAutoAttackDamage(minion) + 100);
+                                Player.GetAutoAttackDamage(minion) + 50f);
             }
 
             public virtual AttackableUnit GetTarget()
@@ -672,7 +672,7 @@ namespace GosuMechanics_Vayne
                 if ((ActiveMode == OrbwalkingMode.Mixed || ActiveMode == OrbwalkingMode.Clear) &&
                     !SubMenu["Orbwalker2"]["PriorizeFarm"].Cast<CheckBox>().CurrentValue)
                 {
-                    var target = TargetSelector.GetTarget(Player.AttackRange, DamageType.Physical);
+                    var target = TargetSelector.GetTarget(-1, DamageType.Physical);
                     if (target != null && InAutoAttackRange(target))
                     {
                         return target;

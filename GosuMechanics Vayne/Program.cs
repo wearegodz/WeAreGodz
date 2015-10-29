@@ -12,17 +12,17 @@ using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using SharpDX;
+using GosuMechanics_Vayne.Common;
 
 
 namespace GosuMechanics_Vayne
 {
     class Program
     {
-        public static Spell.Targeted E;
-        public static Spell.Skillshot Condemn;
-        public static Spell.Skillshot Q;
-        public static Spell.Active W;
-        public static Spell.Active R;
+        public static Spell2 E;
+        public static Spell2 Q;
+        public static Spell2 W;
+        public static Spell2 R;
         public static Spell.Active Heal;
         public static string Author = "WeAreGodz";
         public static string AddonName = "GosuMechanics Vayne";
@@ -34,6 +34,12 @@ namespace GosuMechanics_Vayne
         public static AIHeroClient myHero { get { return ObjectManager.Player; } }
         public static float ManaPercent { get { return myHero.Mana / myHero.MaxMana * 100; } }
         public static float HealthPercent { get { return myHero.Health / myHero.MaxHealth * 100; } }
+        private static List<GameObject> _traps;
+        private static List<string> _trapNames = new List<string> { "teemo", "shroom", "trap", "mine", "ziggse_red" };
+        public static List<GameObject> EnemyTraps
+        {
+            get { return _traps.FindAll(t => t.IsValid && t.IsEnemy); }
+        }
 
         static void Main(string[] args)
         {
@@ -50,26 +56,37 @@ namespace GosuMechanics_Vayne
             if (myHero.Hero != Champion.Vayne) { return; }
             Chat.Print("<font color=\"#F20000\"><b>GosuMechanics Vayne:</b></font> Loaded!");
 
-            Q = new Spell.Skillshot(SpellSlot.Q, 325, SkillShotType.Linear);
-            W = new Spell.Active(SpellSlot.W);
-            E = new Spell.Targeted(SpellSlot.E, 550);
-            R = new Spell.Active(SpellSlot.R, 1200);
-            Condemn = new Spell.Skillshot(SpellSlot.E, 550, SkillShotType.Linear, (int)0.125, 1200);
+            Q = new Spell2(SpellSlot.Q);
+            W = new Spell2(SpellSlot.W);
+            E = new Spell2(SpellSlot.E, 590f);
+            E.SetTargetted(0.25f, 2200f);
+            R = new Spell2(SpellSlot.R);
+
             var slot = myHero.GetSpellSlotFromName("summonerheal");
             if (slot != SpellSlot.Unknown)
             {
                 Heal = new Spell.Active(slot, 600);
             }
 
-            //Fluxy's
-            TargetSelector2.init();
-
             menu = MainMenu.AddMenu(AddonName, AddonName + " by " + Author + " v1.0");
             menu.AddLabel(AddonName + " made by " + Author);
             menu.AddLabel("If you find some bugs, please do report it at my EloBuddy Add-On Thread.Thank You!");
 
             SubMenu["Combo"] = menu.AddSubMenu("Combo", "Combo");
+            SubMenu["Combo"].AddGroupLabel("Tumble Setting");
             SubMenu["Combo"].Add("Q", new CheckBox("Use Q", true));
+            SubMenu["Combo"].Add("Qult", new CheckBox("Smart Q Ult", true));
+            var Q1 = SubMenu["Combo"].Add("Qmode", new Slider("Tumble Mode", 0, 0, 1));
+            var Q2 = new[] { "Smart", "To MousePos" };
+            Q1.DisplayName = Q2[Q1.CurrentValue];
+
+            Q1.OnValueChange +=
+                delegate (ValueBase<int> sender, ValueBase<int>.ValueChangeArgs changeArgs)
+                {
+                    sender.DisplayName = Q2[changeArgs.NewValue];
+                };
+
+            SubMenu["Combo"].AddSeparator(10);
             SubMenu["Combo"].Add("E", new CheckBox("Use E", true));
             SubMenu["Combo"].Add("ELast", new CheckBox("Use E Secure Kill", true));
             SubMenu["Combo"].Add("PushDistance", new Slider("E Push Distance", 425, 300, 475));
@@ -106,33 +123,22 @@ namespace GosuMechanics_Vayne
             SubMenu["Misc"] = menu.AddSubMenu("Misc", "Misc");
             SubMenu["Misc"].AddGroupLabel("AntiGapcloser/Interrupt Settings");
             SubMenu["Misc"].Add("UseEInterrupt", new CheckBox("Use E to Interrupt/Antigapcloser", true));
+            SubMenu["Misc"].Add("AntiGapQ", new CheckBox("Use Q Antigapcloser", true));
             SubMenu["Misc"].AddSeparator(10);
             foreach (var hero in EntityManager.Heroes.Enemies.Where(x => x.IsEnemy))
             {
                 SubMenu["Misc"].Add(hero.ChampionName, new CheckBox("Use Interrupt/Antigapcloser to " + hero.ChampionName, true));
             }
             SubMenu["Misc"].AddSeparator(10);
-            SubMenu["Misc"].AddGroupLabel("Condemn Settings");
-            var mode = SubMenu["Misc"].Add("Mode", new Slider("Condemn Method", 1, 0, 2));
-            var modeDisplay = new[] { "Method 1", "Method 2", "Method 3" };
-            mode.DisplayName = modeDisplay[mode.CurrentValue];
-
-            mode.OnValueChange +=
-                delegate (ValueBase<int> sender, ValueBase<int>.ValueChangeArgs changeArgs)
-                {
-                    sender.DisplayName = modeDisplay[changeArgs.NewValue];
-                };
-
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(x => x.IsEnemy))
             {
                 SubMenu["Misc"].Add(enemy.ChampionName + "E", new CheckBox("Use Condemn if target is " + enemy.ChampionName, true));
             }
-
             SubMenu["Misc"].AddSeparator(10);
             SubMenu["Misc"].AddGroupLabel("Focus W Target");
             SubMenu["Misc"].Add("focusW", new CheckBox("Focus Target with W Buff to proc passive", true));
 
-            SubMenu["Misc"].Add("DrawTarget", new CheckBox("Draw Target", true));
+            SubMenu["Misc"].Add("waypoint", new CheckBox("Draw Target Waypoint", true));
 
             SubMenu["Misc"].AddSeparator(10);
             SubMenu["Misc"].AddGroupLabel("Heal Settings");
@@ -160,17 +166,23 @@ namespace GosuMechanics_Vayne
             }
 
             orbwalker = new Orbwalking.Orbwalker(menu);
+            TargetSelector2.Initialize();
+            Spell2.Initialize();
+            Prediction2.Initialize();
+
+            _traps = new List<GameObject>();
 
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             Game.OnUpdate += Game_OnUpdate;
             Obj_AI_Base.OnSpellCast += Obj_AI_Base_OnSpellCast;
             Obj_AI_Base.OnCreate += Obj_AI_Base_OnCreate;
+            Obj_AI_Base.OnDelete += Obj_AI_Base_OnDelete;
             Orbwalking.AfterAttack += Orbwalking_AfterAttack;
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            Drawing.OnDraw += Drawing_OnDraw;
             Player.OnIssueOrder += Player_OnIssueOrder;
         }
-
         private static void Player_OnIssueOrder(Obj_AI_Base sender, PlayerIssueOrderEventArgs args)
         {
             if (sender.IsMe
@@ -181,6 +193,29 @@ namespace GosuMechanics_Vayne
             {
                 args.Process = false;
             }
+        }
+        private static void Drawing_OnDraw(EventArgs args)
+        {
+            if(SubMenu["Misc"]["waypoint"].Cast<CheckBox>().CurrentValue)
+            {
+                foreach (var e in EntityManager.Heroes.Enemies.Where(en => en.IsVisible && !en.IsDead && en.Distance(myHero) < 2500))
+                {
+                    var ip = Drawing.WorldToScreen(e.Position); //start pos
+
+                    var wp = Utility2.GetWaypoints(e);
+                    var c = wp.Count - 1;
+                    if (wp.Count() <= 1) break;
+
+                    var w = Drawing.WorldToScreen(wp[c].To3D()); //endpos
+
+                    Drawing.DrawLine(ip.X, ip.Y, w.X, w.Y, 2, System.Drawing.Color.Red);
+                }
+            }
+        }
+
+        private static void Obj_AI_Base_OnDelete(GameObject sender, EventArgs args)
+        {
+            _traps.RemoveAll(trap => trap.NetworkId == sender.NetworkId);
         }
 
         private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
@@ -194,50 +229,56 @@ namespace GosuMechanics_Vayne
 
             if (E.IsReady() && SubMenu["Misc"]["UseEInterrupt"].Cast<CheckBox>().CurrentValue && SubMenu["Misc"][target.ChampionName].Cast<CheckBox>().CurrentValue)
             {
-                E.Cast(target);
+                E.CastOnUnit(target);
             }
+            if (SubMenu["Misc"]["AntiGapQ"].Cast<CheckBox>().CurrentValue && Q.IsReady())
+            {
+                if (myHero.Distance(gapcloser.End) < 425)
+                {
+                    Tumble.Cast(myHero.Position.Extend(gapcloser.End, -300).To3D());
+                }
+            }
+
         }
 
         private static void Interrupter2_OnInterruptableTarget(AIHeroClient sender, Interrupter2.InterruptableTargetEventArgs args)
         {
             if (E.IsReady() && sender.IsValidTarget(E.Range) && SubMenu["Misc"]["UseEInterrupt"].Cast<CheckBox>().CurrentValue && SubMenu["Misc"][sender.ChampionName].Cast<CheckBox>().CurrentValue)
             {
-                E.Cast(sender);
+                E.CastOnUnit(sender);
             }
         }
 
         private static void Orbwalking_AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
-            var enemy = TargetSelector2.GetTarget(E.Range, DamageType.Physical);
-
-            if (enemy == null)
+            if (!Q.IsReady()) return;
+            if (unit.IsMe && target.IsValid<AIHeroClient>())
             {
-                return;
+                var tg = target as AIHeroClient;
+                if (tg == null) return;
+                var mode = SubMenu["Combo"]["Qmode"].Cast<Slider>().DisplayName;
+                var tumblePosition = Game.CursorPos;
+                switch (mode)
+                {
+                    case "Smart":
+                        tumblePosition = tg.GetTumblePos();
+                        break;
+                    default:
+                        tumblePosition = Game.CursorPos;
+                        break;
+                }
+                Tumble.Cast(tumblePosition);
             }
-
-            var mousePos = myHero.Position.Extend(Game.CursorPos, Q.Range);
-            if (SubMenu["Combo"]["Q"].Cast<CheckBox>().CurrentValue && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo  &&
-                enemy.IsValidTarget() && Q.IsReady())
+            switch (orbwalker.ActiveMode)
             {
-                var after = myHero.Position + (Game.CursorPos - myHero.Position).Normalized() * 300;
-                var disafter = Vector3.DistanceSquared(after, enemy.Position);
-                if ((disafter < 630 * 630) && disafter > 150 * 150)
-                {
-                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
-                    Console.WriteLine(" Q1");
-                }
-                if (Vector3.DistanceSquared(enemy.Position, myHero.Position) > 630 * 630 &&
-                    disafter < 630 * 630)
-                {
-                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
-                    Console.WriteLine(" Q2");
-                }
-                else
-                {
-                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
-                    Console.WriteLine(" Q3");
-                }
-            }       
+                case Orbwalking.OrbwalkingMode.Clear:
+                    JungleClear();
+                    LaneClear();
+                    break;
+                case Orbwalking.OrbwalkingMode.LastHit:
+                    LastHit();
+                    break;
+            }
         }
 
         private static void Obj_AI_Base_OnCreate(GameObject sender, EventArgs args)
@@ -256,13 +297,18 @@ namespace GosuMechanics_Vayne
             {
                 CastCondemn();
             }
+
+            foreach (var trapName in _trapNames)
+            {
+                if (sender.Name.ToLower().Contains(trapName)) _traps.Add(sender);
+            }
         }
 
         private static void Obj_AI_Base_OnSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (!sender.IsMe) return;
 
-            var enemy = TargetSelector2.GetTarget(E.Range, DamageType.Physical);
+            var enemy = TargetSelector2.GetTarget(E.Range, TargetSelector2.DamageType.Physical);
 
             if (enemy == null)
             {
@@ -273,7 +319,7 @@ namespace GosuMechanics_Vayne
             {
                 var mousePos = myHero.Position.Extend(Game.CursorPos, Q.Range);
                 if (SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed &&
-                     enemy.IsValidTarget() && Q.IsReady())
+                     enemy.IsValidTarget(myHero.GetAutoAttackRange()) && Q.IsReady())
                 {
                     myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
                     orbwalker.ForceTarget(enemy);
@@ -281,9 +327,9 @@ namespace GosuMechanics_Vayne
 
                 if (SubMenu["Harass"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady()
                 && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed &&
-                enemy.IsValidTarget())
+                enemy.IsValidTarget(myHero.GetAutoAttackRange()))
                 {
-                    E.Cast(enemy);
+                    E.CastOnUnit(enemy);
                     orbwalker.ForceTarget(enemy);
                 }
             }
@@ -294,7 +340,7 @@ namespace GosuMechanics_Vayne
             {
                 if (SubMenu["Combo"]["ELast"].Cast<CheckBox>().CurrentValue && E.IsReady() && myHero.CountEnemiesInRange(600) <= 1)
                 {
-                    var dmgE = myHero.GetSpellDamage(Etarget, SpellSlot.E);
+                    var dmgE = myHero.GetSpellDamage2(Etarget, SpellSlot.E);
                     if (dmgE > Etarget.Health || (WTarget(Etarget) == 2 && dmgE + Wdmg(Etarget) > Etarget.Health))
                     {
                         LastHitE = Etarget;
@@ -304,7 +350,26 @@ namespace GosuMechanics_Vayne
 
                 if (LastHitE != myHero)
                 {
-                    E.Cast(LastHitE);
+                    E.CastOnUnit(LastHitE);
+                }
+            }
+
+            if (sender.Spellbook.Owner.IsMe)
+            {
+                if (args.Slot == SpellSlot.Q)
+                {
+                    if (Tumble.TumbleOrderPos != Vector3.Zero)
+                    {
+                        if (Tumble.TumbleOrderPos.IsDangerousPosition())
+                        {
+                            Tumble.TumbleOrderPos = Vector3.Zero;
+                            args.Process = false;
+                        }
+                        else
+                        {
+                            Tumble.TumbleOrderPos = Vector3.Zero;
+                        }
+                    }
                 }
             }
         }
@@ -316,12 +381,8 @@ namespace GosuMechanics_Vayne
                 case Orbwalking.OrbwalkingMode.Combo:
                     Combo();
                     break;
-                case Orbwalking.OrbwalkingMode.LastHit:
-                    LastHit();
-                    break;
                 case Orbwalking.OrbwalkingMode.Clear:
-                    LaneClear();
-                    JungleClear();
+                    JungleClear2();
                     break;
             }
 
@@ -375,16 +436,16 @@ namespace GosuMechanics_Vayne
                 {
                     return;
                 }
-                if (FocusWTarget.IsValidTarget() && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo ||
+                if (FocusWTarget.IsValidTarget(myHero.GetAutoAttackRange()) && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo ||
                     orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed)
                 {
-                    TargetSelector.GetPriority(FocusWTarget);
+                    TargetSelector2.GetPriority(FocusWTarget);
                     Console.WriteLine("Focus W");
                 }
                 else
                 {
-                    TargetSelector.GetPriority(
-                        TargetSelector2.GetTarget(myHero.AttackRange, DamageType.Physical));
+                    TargetSelector2.GetPriority(
+                        TargetSelector2.GetTarget(myHero.AttackRange, TargetSelector2.DamageType.Physical));
                 }
             }
 
@@ -404,11 +465,10 @@ namespace GosuMechanics_Vayne
 
                 if (SubMenu["Combo"]["castE"].Cast<KeyBind>().CurrentValue && bestEnemy != null)
                 {
-                    E.Cast(bestEnemy);
+                    E.CastOnUnit(bestEnemy);
                 }
             }
         }
-
 
         public static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
@@ -428,13 +488,13 @@ namespace GosuMechanics_Vayne
             if (sender is AIHeroClient)
             {
                 var pant = (AIHeroClient)sender;
-                if (pant.IsValidTarget() && pant.ChampionName == "Pantheon" && pant.GetSpellSlotFromName(args.SData.Name) == SpellSlot.W)
+                if (pant.IsValidTarget(myHero.GetAutoAttackRange()) && pant.ChampionName == "Pantheon" && pant.GetSpellSlotFromName(args.SData.Name) == SpellSlot.W)
                 {
                     if (SubMenu["Misc"]["UseEInterrupt"].Cast<CheckBox>().CurrentValue && args.Target.IsMe)
                     {
                         if (pant.IsValidTarget(E.Range))
                         {
-                            E.Cast(pant);
+                            E.CastOnUnit(pant);
                         }
                     }
                 }
@@ -461,20 +521,19 @@ namespace GosuMechanics_Vayne
                 Console.WriteLine("heal ");
             }
 
-            var target = TargetSelector2.GetTarget(E.Range, DamageType.Physical);
+            var target = TargetSelector2.GetTarget(E.Range, TargetSelector2.DamageType.Physical);
             orbwalker.ForceTarget(target);
 
-            if (!target.IsValidTarget())
+            if (!target.IsValidTarget(E.Range))
             {
                 return;
             }
-            if (SubMenu["Combo"]["E"].Cast<CheckBox>().CurrentValue && target != null && target.IsValidTarget() && E.IsReady() &&
+            if (SubMenu["Combo"]["E"].Cast<CheckBox>().CurrentValue && target != null && target.IsValidTarget(E.Range) && E.IsReady() &&
                 SubMenu["Misc"][target.ChampionName + "E"].Cast<CheckBox>().CurrentValue)
             {
-                CondemnMode();
+                Condemn();
                 Console.WriteLine(" E");
             }
-
             if (SubMenu["Combo"]["R"].Cast<CheckBox>().CurrentValue && myHero.CountEnemiesInRange(600f) >= (SubMenu["Combo"]["R2"].Cast<Slider>().CurrentValue) && R.IsReady())
             {
                 R.Cast();
@@ -482,7 +541,7 @@ namespace GosuMechanics_Vayne
             }
             var mousePos = myHero.Position.Extend(Game.CursorPos, Q.Range);
 
-            if ((SubMenu["Combo"]["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && myHero.HasBuff("vayneinquisition") && myHero.CountEnemiesInRange(1500) > 0 && myHero.CountEnemiesInRange(670) != 1))
+            if ((SubMenu["Combo"]["Qult"].Cast<CheckBox>().CurrentValue && Q.IsReady() && myHero.HasBuff("vayneinquisition") && myHero.CountEnemiesInRange(1500) > 0 && myHero.CountEnemiesInRange(670) != 1))
             {
                 myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true);
                 Console.WriteLine(" RQ");
@@ -495,7 +554,7 @@ namespace GosuMechanics_Vayne
                     Item.UseItem((int)ItemId.Blade_of_the_Ruined_King, target);
                 }
                 if (Item.HasItem((int)ItemId.Bilgewater_Cutlass, myHero) && Item.CanUseItem((int)ItemId.Bilgewater_Cutlass)
-                   && target.IsValidTarget())
+                   && target.IsValidTarget(myHero.GetAutoAttackRange()))
                 {
                     Item.UseItem((int)ItemId.Bilgewater_Cutlass, target);
                 }
@@ -516,9 +575,9 @@ namespace GosuMechanics_Vayne
                     Minions.Where(
                         minions => minions.Health < ObjectManager.Player.GetSpellDamage(minions, SpellSlot.Q)))
                 {
-                    if (minions != null && minions.IsValidTarget())
+                    if (minions != null && minions.IsValidTarget(E.Range))
                     {
-                        Q.Cast(minions);
+                        Q.Cast(myHero.GetTumblePos());
                         Orbwalker.ForcedTarget = minions;
                         Console.WriteLine("lasthit Q");
                     }
@@ -535,9 +594,9 @@ namespace GosuMechanics_Vayne
                     Minions.Where(
                         minions => minions.Health < ObjectManager.Player.GetSpellDamage(minions, SpellSlot.Q)))
                 {
-                    if (minions != null && minions.IsValidTarget() && minions.IsVisible)
+                    if (minions != null && minions.IsValidTarget(E.Range) && minions.IsVisible)
                     {
-                        Q.Cast(minions);
+                        Q.Cast(myHero.GetTumblePos());
                         Orbwalker.ForcedTarget = minions;
                         Console.WriteLine("laneclear Q");
                     }
@@ -551,10 +610,10 @@ namespace GosuMechanics_Vayne
             {
                 if (SubMenu["JungleClear"]["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(Q.Range))
                 {
-                    Q.Cast(Game.CursorPos);
+                    Q.Cast(myHero.GetTumblePos());
                     Console.WriteLine("jungle Q");
                 }
-                if (SubMenu["JungleClear"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget())
+                if (SubMenu["JungleClear"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(E.Range))
                 {
                     if (jungleMobs.BaseSkinName == "SRU_Razorbeak" || jungleMobs.BaseSkinName == "SRU_Red" ||
                     jungleMobs.BaseSkinName == "SRU_Blue" ||
@@ -562,7 +621,37 @@ namespace GosuMechanics_Vayne
                     jungleMobs.BaseSkinName == "Sru_Crab")
                     {
                         var pushDistance = 425;
-                        var targetPosition = Condemn.GetPrediction(jungleMobs).UnitPosition;
+                        var targetPosition = E.GetPrediction(jungleMobs, false, -1, null).UnitPosition;
+                        var pushDirection = (targetPosition - ObjectManager.Player.ServerPosition).Normalized();
+                        float checkDistance = pushDistance / 40f;
+                        for (int i = 0; i < 40; i++)
+                        {
+                            Vector3 finalPosition = targetPosition + (pushDirection * checkDistance * i);
+                            var collFlags = NavMesh.GetCollisionFlags(finalPosition);
+                            if (collFlags.HasFlag(CollisionFlags.Wall) || collFlags.HasFlag(CollisionFlags.Building))
+                            {
+                                E.Cast(jungleMobs);
+                                Orbwalker.ForcedTarget = jungleMobs;
+                                Console.WriteLine("jungle E");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        private static void JungleClear2()
+        {
+            Obj_AI_Base jungleMobs = EntityManager.MinionsAndMonsters.GetJungleMonsters(myHero.Position, Q.Range, true).FirstOrDefault();
+            {
+                if (SubMenu["JungleClear"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(E.Range))
+                {
+                    if (jungleMobs.BaseSkinName == "SRU_Razorbeak" || jungleMobs.BaseSkinName == "SRU_Red" ||
+                    jungleMobs.BaseSkinName == "SRU_Blue" ||
+                    jungleMobs.BaseSkinName == "SRU_Krug" || jungleMobs.BaseSkinName == "SRU_Gromp" ||
+                    jungleMobs.BaseSkinName == "Sru_Crab")
+                    {
+                        var pushDistance = 425;
+                        var targetPosition = E.GetPrediction(jungleMobs, false, -1, null).UnitPosition;
                         var pushDirection = (targetPosition - ObjectManager.Player.ServerPosition).Normalized();
                         float checkDistance = pushDistance / 40f;
                         for (int i = 0; i < 40; i++)
@@ -584,6 +673,10 @@ namespace GosuMechanics_Vayne
         public static bool UltActive()
         {
             return (myHero.HasBuff("vaynetumblefade") && !UnderTower(myHero.Position));
+        }
+        public static bool TumbleActive()
+        {
+            return myHero.Buffs.Any(b => b.Name.ToLower().Contains("vaynetumblebonus"));
         }
 
         public static bool UnderTower(Vector3 pos)
@@ -627,66 +720,32 @@ namespace GosuMechanics_Vayne
                 if (rengarLeap.IsValidTarget(E.Range) && E.IsReady() &&
                     rengarLeap.Distance(myHero) <= E.Range)
                 {
-                    E.Cast(rengarLeap);
+                    E.CastOnUnit(rengarLeap);
                     Console.WriteLine("E Rengar");
                 }
             }
         }
-
-        private static void CondemnMode()
+        public static void Condemn()
         {
-            var Mode = SubMenu["Misc"]["Mode"].DisplayName;
-
-            switch (Mode)
-            {
-                case "Method 1":
-                    foreach (var target in EntityManager.Heroes.Enemies.Where(h => h.IsValidTarget(E.Range)))
-                    {
-                        var pushDistance = SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue;
-                        var targetPosition = Condemn.GetPrediction(target).UnitPosition;
-                        var pushDirection = (targetPosition - ObjectManager.Player.ServerPosition).Normalized();
-                        float checkDistance = pushDistance / 40f;
-                        for (int i = 0; i < 40; i++)
-                        {
-                            Vector3 finalPosition = targetPosition + (pushDirection * checkDistance * i);
-                            var collFlags = NavMesh.GetCollisionFlags(finalPosition);
-                            if (collFlags.HasFlag(CollisionFlags.Wall) || collFlags.HasFlag(CollisionFlags.Building))
-                            {
-                                E.Cast(target);
-                            }
-                        }
-                    }
-                    break;
-                case "Method 2":
-                    if (!E.IsReady()) return;
-                    if (((orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo && SubMenu["Combo"]["E"].Cast<CheckBox>().CurrentValue)))
-                    {
-                        foreach (var hero in from hero in ObjectManager.Get<AIHeroClient>().Where(hero => hero.IsValidTarget(550f)) let prediction = Condemn.GetPrediction(hero)
-                        where NavMesh.GetCollisionFlags(prediction.UnitPosition.To2D().Extend(ObjectManager.Player.ServerPosition.To2D(),
-                        -SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue).To3D()).HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(prediction.UnitPosition.To2D().Extend(ObjectManager.Player.ServerPosition.To2D(),
-                        -(SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue / 2)).To3D()).HasFlag(CollisionFlags.Wall) select hero)
-                        {
-                            E.Cast(hero);
-                        }
-                    }
-                    break;
-                case "Method 3":
-                    foreach (var hero in EntityManager.Heroes.Enemies.Where(hero => hero.IsValidTarget(E.Range) && !hero.HasBuffOfType(BuffType.SpellShield) && !hero.HasBuffOfType(BuffType.SpellImmunity)))
-                    {
-                        var EPred = Condemn.GetPrediction(hero);
-                        int pushDist = SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue;
-                        var FinalPosition = EPred.UnitPosition.To2D().Extend(ObjectManager.Player.ServerPosition.To2D(), -pushDist).To3D();
-
-                        for (int i = 1; i < pushDist; i += (int)hero.BoundingRadius)
-                        {
-                            Vector3 loc3 = EPred.UnitPosition.To2D().Extend(ObjectManager.Player.ServerPosition.To2D(), -i).To3D();
-
-                            if (loc3.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Wall) || loc3.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Building))
-                                E.Cast(hero);
-                        }
-                    }
-                    break;
-            }
+            if (!E.IsReady()) return;
+            if (orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo && SubMenu["Combo"]["E"].Cast<CheckBox>().CurrentValue)
+                foreach (var hero in from hero in ObjectManager.Get<AIHeroClient>().Where(hero => hero.IsValidTarget(550f))
+                                     let prediction = E.GetPrediction(hero)
+                                     where NavMesh.GetCollisionFlags(
+                                         prediction.UnitPosition.To2D()
+                                             .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                                 -SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue)
+                                             .To3D())
+                                         .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
+                                             prediction.UnitPosition.To2D()
+                                                 .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                                     -(SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue / 2))
+                                                 .To3D())
+                                             .HasFlag(CollisionFlags.Wall)
+                                     select hero)
+                {
+                    E.CastOnUnit(hero);
+                }
         }
     }
 }

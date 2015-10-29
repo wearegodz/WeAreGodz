@@ -1,9 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows.Input;
+using SharpDX;
+using System.Threading.Tasks;
 using EloBuddy;
 using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
 
-namespace GosuMechanics_Vayne
+namespace GosuMechanics_Vayne.Common
 {
     public static class Interrupter2
     {
@@ -120,7 +132,7 @@ namespace GosuMechanics_Vayne
                     // Get the interruptable spell
                     var spell =
                         InterruptableSpells[target.ChampionName].Find(
-                            s => s.Slot == target.GetSpellSlotFromName(args.SData.Name));
+                            s => s.Slot == target.GetSpellSlot(args.SData.Name));
                     if (spell != null)
                     {
                         // Mark champ as casting interruptable spell
@@ -132,7 +144,7 @@ namespace GosuMechanics_Vayne
 
         private static void Spellbook_OnStopCast(Obj_AI_Base sender, SpellbookStopCastEventArgs args)
         {
-            var target = sender as AIHeroClient;
+            var target = sender.Spellbook.Owner as AIHeroClient;
             if (target != null)
             {
                 // Check if the spell itself stopped casting (interrupted)

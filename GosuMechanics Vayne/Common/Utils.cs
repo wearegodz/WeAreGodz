@@ -8,11 +8,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Input;
 using SharpDX;
-using System.Threading.Tasks;
 using EloBuddy;
-using EloBuddy.SDK;
 
-namespace GosuMechanics_Vayne
+namespace GosuMechanics_Vayne.Common
 {
     public enum WindowsMessages
     {
@@ -84,7 +82,7 @@ namespace GosuMechanics_Vayne
             keybd_event((int)KeyboardEvents.KEYBDEVENTF_SHIFTVIRTUAL, (int)KeyboardEvents.KEYBDEVENTF_SHIFTSCANCODE, (int)KeyboardEvents.KEYBDEVENTF_KEYDOWN, 0);
             mouse_event((int)MouseEvents.MOUSEEVENTF_RIGHTDOWN, coordX, coordY, 0, 0);
             mouse_event((int)MouseEvents.MOUSEEVENTF_RIGHTUP, coordX, coordY, 0, 0);
-            Core.DelayAction(() => { keybd_event((int)KeyboardEvents.KEYBDEVENTF_SHIFTVIRTUAL, (int)KeyboardEvents.KEYBDEVENTF_SHIFTSCANCODE, (int)KeyboardEvents.KEYBDEVENTF_KEYUP, 0); }, 200);
+            Utility2.DelayAction.Add(200, () => { keybd_event((int)KeyboardEvents.KEYBDEVENTF_SHIFTVIRTUAL, (int)KeyboardEvents.KEYBDEVENTF_SHIFTSCANCODE, (int)KeyboardEvents.KEYBDEVENTF_KEYUP, 0); });
         }
 
         public static void ShiftClick(Vector2 position)
@@ -92,7 +90,7 @@ namespace GosuMechanics_Vayne
             keybd_event((int)KeyboardEvents.KEYBDEVENTF_SHIFTVIRTUAL, (int)KeyboardEvents.KEYBDEVENTF_SHIFTSCANCODE, (int)KeyboardEvents.KEYBDEVENTF_KEYDOWN, 0);
             mouse_event((int)MouseEvents.MOUSEEVENTF_RIGHTDOWN, (int)position.X, (int)position.Y, 0, 0);
             mouse_event((int)MouseEvents.MOUSEEVENTF_RIGHTUP, (int)position.X, (int)position.Y, 0, 0);
-            Core.DelayAction(() => { keybd_event((int)KeyboardEvents.KEYBDEVENTF_SHIFTVIRTUAL, (int)KeyboardEvents.KEYBDEVENTF_SHIFTSCANCODE, (int)KeyboardEvents.KEYBDEVENTF_KEYUP, 0); }, 200);
+            Utility2.DelayAction.Add(200, () => { keybd_event((int)KeyboardEvents.KEYBDEVENTF_SHIFTVIRTUAL, (int)KeyboardEvents.KEYBDEVENTF_SHIFTSCANCODE, (int)KeyboardEvents.KEYBDEVENTF_KEYUP, 0); });
         }
 
         public static void ShiftClick(Vector3 gamePosition)
@@ -446,254 +444,6 @@ namespace GosuMechanics_Vayne
             var enumerable = values as int[] ?? values.ToArray();
             var avg = enumerable.Average();
             return Math.Sqrt(enumerable.Average(v => Math.Pow(v - avg, 2)));
-        }
-
-
-        public static List<Vector2> CutPath(this List<Vector2> path, float distance)
-        {
-            var result = new List<Vector2>();
-            var Distance = distance;
-            if (distance < 0)
-            {
-                path[0] = path[0] + distance * (path[1] - path[0]).Normalized();
-                return path;
-            }
-
-            for (var i = 0; i < path.Count - 1; i++)
-            {
-                var dist = path[i].Distance(path[i + 1]);
-                if (dist > Distance)
-                {
-                    result.Add(path[i] + Distance * (path[i + 1] - path[i]).Normalized());
-                    for (var j = i + 1; j < path.Count; j++)
-                    {
-                        result.Add(path[j]);
-                    }
-
-                    break;
-                }
-                Distance -= dist;
-            }
-            return result.Count > 0 ? result : new List<Vector2> { path.Last() };
-        }
-
-        public static bool IsValid<T>(this GameObject obj) where T : GameObject
-        {
-            return obj as T != null && obj.IsValid;
-        }
-
-        public static bool IsValidTarget(this AttackableUnit unit,
-            float range = float.MaxValue,
-            bool checkTeam = true,
-            Vector3 from = new Vector3())
-        {
-            if (unit == null || !unit.IsValid || unit.IsDead || !unit.IsVisible || !unit.IsTargetable ||
-                unit.IsInvulnerable)
-            {
-                return false;
-            }
-
-            if (checkTeam && unit.Team == ObjectManager.Player.Team)
-            {
-                return false;
-            }
-
-            var @base = unit as Obj_AI_Base;
-            var unitPosition = @base != null ? @base.ServerPosition : unit.Position;
-
-            return !(range < float.MaxValue) ||
-                   !(Vector2.DistanceSquared(
-                       (@from.To2D().IsValid() ? @from : ObjectManager.Player.ServerPosition).To2D(),
-                       unitPosition.To2D()) > range * range);
-        }
-
-        /// <summary>
-        ///     Returns the path of the unit appending the ServerPosition at the start, works even if the unit just entered fow.
-        /// </summary>
-        public static List<Vector2> GetWaypoints(this Obj_AI_Base unit)
-        {
-            var result = new List<Vector2>();
-
-            if (unit.IsVisible)
-            {
-                result.Add(unit.ServerPosition.To2D());
-                var path = unit.Path;
-                if (path.Length > 0)
-                {
-                    var first = path[0].To2D();
-                    if (first.Distance(result[0], true) > 40)
-                    {
-                        result.Add(first);
-                    }
-
-                    for (int i = 1; i < path.Length; i++)
-                    {
-                        result.Add(path[i].To2D());
-                    }
-                }
-            }
-            else if (WaypointTracker.StoredPaths.ContainsKey(unit.NetworkId))
-            {
-                var path = WaypointTracker.StoredPaths[unit.NetworkId];
-                var timePassed = (Utils.TickCount - WaypointTracker.StoredTick[unit.NetworkId]) / 1000f;
-                if (path.PathLength() >= unit.MoveSpeed * timePassed)
-                {
-                    result = CutPath(path, (int)(unit.MoveSpeed * timePassed));
-                }
-            }
-
-            return result;
-        }
-
-        public static float PathLength(this List<Vector2> path)
-        {
-            var distance = 0f;
-            for (var i = 0; i < path.Count - 1; i++)
-            {
-                distance += path[i].Distance(path[i + 1]);
-            }
-            return distance;
-        }
-
-        public static List<Vector2Time> GetWaypointsWithTime(this Obj_AI_Base unit)
-        {
-            var wp = unit.GetWaypoints();
-
-            if (wp.Count < 1)
-            {
-                return null;
-            }
-
-            var result = new List<Vector2Time>();
-            var speed = unit.MoveSpeed;
-            var lastPoint = wp[0];
-            var time = 0f;
-
-            foreach (var point in wp)
-            {
-                time += point.Distance(lastPoint) / speed;
-                result.Add(new Vector2Time(point, time));
-                lastPoint = point;
-            }
-
-            return result;
-        }
-    }
-
-    internal static class WaypointTracker
-    {
-        public static readonly Dictionary<int, List<Vector2>> StoredPaths = new Dictionary<int, List<Vector2>>();
-        public static readonly Dictionary<int, int> StoredTick = new Dictionary<int, int>();
-    }
-
-    public static class Version
-    {
-        public static int MajorVersion;
-        public static int MinorVersion;
-        public static int Build;
-        public static int Revision;
-        private static readonly int[] VersionArray;
-
-        static Version()
-        {
-            var d = Game.Version.Split('.');
-            MajorVersion = Convert.ToInt32(d[0]);
-            MinorVersion = Convert.ToInt32(d[1]);
-            Build = Convert.ToInt32(d[2]);
-            Revision = Convert.ToInt32(d[3]);
-
-            VersionArray = new[] { MajorVersion, MinorVersion, Build, Revision };
-        }
-
-        public static bool IsOlder(string version)
-        {
-            var d = version.Split('.');
-            return MinorVersion < Convert.ToInt32(d[1]);
-        }
-
-        public static bool IsNewer(string version)
-        {
-            var d = version.Split('.');
-            return MinorVersion > Convert.ToInt32(d[1]);
-        }
-
-        public static bool IsEqual(string version)
-        {
-            var d = version.Split('.');
-            for (var i = 0; i <= d.Length; i++)
-            {
-                if (d[i] == null || Convert.ToInt32(d[i]) != VersionArray[i])
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    public class Vector2Time
-    {
-        public Vector2 Position;
-        public float Time;
-
-        public Vector2Time(Vector2 pos, float time)
-        {
-            Position = pos;
-            Time = time;
-        }
-    }
-
-    public static class DelayAction
-    {
-        public delegate void Callback();
-
-        public static List<Action> ActionList = new List<Action>();
-
-        static DelayAction()
-        {
-            Game.OnUpdate += GameOnOnGameUpdate;
-        }
-
-        private static void GameOnOnGameUpdate(EventArgs args)
-        {
-            for (var i = ActionList.Count - 1; i >= 0; i--)
-            {
-                if (ActionList[i].Time <= Utils.GameTimeTickCount)
-                {
-                    try
-                    {
-                        if (ActionList[i].CallbackObject != null)
-                        {
-                            ActionList[i].CallbackObject();
-                            //Will somehow result in calling ALL non-internal marked classes of the called assembly and causes NullReferenceExceptions.
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
-
-                    ActionList.RemoveAt(i);
-                }
-            }
-        }
-
-        public static void Add(int time, Callback func)
-        {
-            var action = new Action(time, func);
-            ActionList.Add(action);
-        }
-
-        public struct Action
-        {
-            public Callback CallbackObject;
-            public int Time;
-
-            public Action(int time, Callback callback)
-            {
-                Time = time + Utils.GameTimeTickCount;
-                CallbackObject = callback;
-            }
         }
     }
 }

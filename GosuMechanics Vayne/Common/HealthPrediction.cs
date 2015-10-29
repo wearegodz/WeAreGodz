@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using SharpDX;
 using System.Threading.Tasks;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
-using EloBuddy.SDK.Menu.Values;
-using EloBuddy.SDK.Rendering;
-using SharpDX;
 
-namespace GosuMechanics_Vayne
+namespace GosuMechanics_Vayne.Common
 {
     /// <summary>
     ///     This class allows you to calculate the health of units after a set time. Only works on minions and only taking into account the auto-attack damage.
@@ -25,11 +22,10 @@ namespace GosuMechanics_Vayne
         {
             Obj_AI_Base.OnProcessSpellCast += ObjAiBaseOnOnProcessSpellCast;
             Game.OnUpdate += Game_OnGameUpdate;
-            Spellbook.OnStopCast += Spellbook_OnStopCast;
+            Spellbook.OnStopCast += SpellbookOnStopCast;
             MissileClient.OnDelete += MissileClient_OnDelete;
             Obj_AI_Base.OnSpellCast += Obj_AI_Base_OnSpellCast;
         }
-
         private static void Obj_AI_Base_OnSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (ActiveAttacks.ContainsKey(sender.NetworkId) && sender.IsMelee)
@@ -62,13 +58,13 @@ namespace GosuMechanics_Vayne
                 .ForEach(pair => ActiveAttacks.Remove(pair.Key));
         }
 
-        private static void Spellbook_OnStopCast(Obj_AI_Base sender, SpellbookStopCastEventArgs args)
+        private static void SpellbookOnStopCast(Obj_AI_Base sender, SpellbookStopCastEventArgs args)
         {
-            if (sender.IsValid && args.StopAnimation)
+            if (sender.Spellbook.Owner.IsValid && args.StopAnimation)
             {
-                if (ActiveAttacks.ContainsKey(sender.NetworkId))
+                if (ActiveAttacks.ContainsKey(sender.Spellbook.Owner.NetworkId))
                 {
-                    ActiveAttacks.Remove(sender.NetworkId);
+                    ActiveAttacks.Remove(sender.Spellbook.Owner.NetworkId);
                 }
             }
         }

@@ -1,11 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SharpDX;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows.Input;
+using System.Threading.Tasks;
 using EloBuddy;
 using EloBuddy.SDK;
-using SharpDX;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
 
-namespace GosuMechanics_Vayne
+
+namespace GosuMechanics_Vayne.Common
 {
     public delegate void OnGapcloseH(ActiveGapcloser gapcloser);
 
@@ -665,7 +676,7 @@ namespace GosuMechanics_Vayne
                     Sender = (AIHeroClient)sender,
                     TickCount = Utils.TickCount,
                     SkillType = (args.Target != null && args.Target.IsMe) ? GapcloserType.Targeted : GapcloserType.Skillshot,
-                    Slot = ((AIHeroClient)sender).GetSpellSlotFromName(args.SData.Name)
+                    Slot = ((AIHeroClient)sender).GetSpellSlot(args.SData.Name)
                 });
         }
 

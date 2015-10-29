@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SharpDX;
+using System;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
-using EloBuddy.SDK.Events;
-using EloBuddy.SDK.Menu;
-using EloBuddy.SDK.Menu.Values;
-using EloBuddy.SDK.Rendering;
-using SharpDX;
 
-namespace GosuMechanics_Vayne
+namespace GosuMechanics_Vayne.Common
 {
     public enum MinionOrderTypes
     {
@@ -202,6 +196,38 @@ namespace GosuMechanics_Vayne
             }
 
             return new FarmLocation(result, minionCount);
+        }
+
+        public static List<Vector2> GetMinionsPredictedPositions(List<Obj_AI_Base> minions,
+            float delay,
+            float width,
+            float speed,
+            Vector3 from,
+            float range,
+            bool collision,
+            SkillshotType stype,
+            Vector3 rangeCheckFrom = new Vector3())
+        {
+            from = from.To2D().IsValid() ? from : ObjectManager.Player.ServerPosition;
+
+            return (from minion in minions
+                    select
+                        Prediction2.GetPrediction(
+                            new PredictionInput
+                            {
+                                Unit = minion,
+                                Delay = delay,
+                                Radius = width,
+                                Speed = speed,
+                                From = @from,
+                                Range = range,
+                                Collision = collision,
+                                Type = stype,
+                                RangeCheckFrom = rangeCheckFrom
+                            })
+                into pos
+                    where pos.Hitchance >= HitChance.High
+                    select pos.UnitPosition.To2D()).ToList();
         }
 
         /*

@@ -658,7 +658,7 @@ namespace GosuMechanics_Vayne.Common
                     ObjectManager.Get<Obj_AI_Minion>()
                         .Any(
                             minion =>
-                                minion.IsValidTarget() && InAutoAttackRange(minion) && minion.Team != GameObjectTeam.Neutral &&
+                                minion.IsValidTarget() && !minion.IsDead && InAutoAttackRange(minion) && minion.Team != GameObjectTeam.Neutral &&
                                 InAutoAttackRange(minion) && MinionManager.IsMinion(minion, false) &&
                                 HealthPrediction.LaneClearHealthPrediction(
                                     minion, (int)((Player.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay) <=
@@ -672,8 +672,8 @@ namespace GosuMechanics_Vayne.Common
                 if ((ActiveMode == OrbwalkingMode.Mixed || ActiveMode == OrbwalkingMode.Clear) &&
                     !SubMenu["Orbwalker2"]["PriorizeFarm"].Cast<CheckBox>().CurrentValue)
                 {
-                    var target = TargetSelector.GetTarget(-1, DamageType.Physical);
-                    if (target != null && InAutoAttackRange(target))
+                    var target = TargetSelector2.GetTarget(Player.GetAutoAttackRange(), TargetSelector2.DamageType.Physical);
+                    if (target != null && InAutoAttackRange(target) && !target.IsDead)
                     {
                         return target;
                     }
@@ -748,8 +748,8 @@ namespace GosuMechanics_Vayne.Common
                 /*Champions*/
                 if (ActiveMode != OrbwalkingMode.LastHit)
                 {
-                    var target = TargetSelector.GetTarget(-1, DamageType.Physical);
-                    if (target.IsValidTarget() && InAutoAttackRange(target))
+                    var target = TargetSelector2.GetTarget(Player.GetAutoAttackRange(), TargetSelector2.DamageType.Physical);
+                    if (target.IsValidTarget() && InAutoAttackRange(target) && !target.IsDead)
                     {
                         return target;
                     }

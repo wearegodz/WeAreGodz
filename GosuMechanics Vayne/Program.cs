@@ -59,7 +59,7 @@ namespace GosuMechanics_Vayne
             Q = new Spell2(SpellSlot.Q);
             W = new Spell2(SpellSlot.W);
             E = new Spell2(SpellSlot.E, 590f);
-            E.SetTargetted(0.25f, 2200f);
+            E.SetTargetted(0.25f, 2000f);
             R = new Spell2(SpellSlot.R);
 
             var slot = myHero.GetSpellSlotFromName("summonerheal");
@@ -263,11 +263,11 @@ namespace GosuMechanics_Vayne
                     case "Smart":
                         tumblePosition = tg.GetTumblePos();
                         break;
-                    default:
+                    case "To MousePos":
                         tumblePosition = Game.CursorPos;
                         break;
                 }
-                Tumble.Cast(tumblePosition);
+                Tumble.Cast(tg.GetTumblePos());
             }
             switch (orbwalker.ActiveMode)
             {
@@ -321,15 +321,15 @@ namespace GosuMechanics_Vayne
                 if (SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed &&
                      enemy.IsValidTarget(myHero.GetAutoAttackRange()) && Q.IsReady())
                 {
-                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true);
                     orbwalker.ForceTarget(enemy);
                 }
 
-                if (SubMenu["Harass"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady()
+                if (SubMenu["Harass"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && !Q.IsReady()
                 && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed &&
                 enemy.IsValidTarget(myHero.GetAutoAttackRange()))
                 {
-                    E.CastOnUnit(enemy);
+                    E.Cast(enemy);
                     orbwalker.ForceTarget(enemy);
                 }
             }
@@ -436,7 +436,7 @@ namespace GosuMechanics_Vayne
                 {
                     return;
                 }
-                if (FocusWTarget.IsValidTarget(myHero.GetAutoAttackRange()) && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo ||
+                if (FocusWTarget.IsValidTarget(myHero.GetAutoAttackRange()) && !FocusWTarget.IsDead && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo ||
                     orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed)
                 {
                     TargetSelector2.GetPriority(FocusWTarget);
@@ -568,7 +568,7 @@ namespace GosuMechanics_Vayne
 
         private static void LastHit()
         {
-            if (Q.IsReady() && SubMenu["LastHit"]["Q"].Cast<CheckBox>().CurrentValue)
+            if (Q.IsReady() && SubMenu["LastHit"]["Q"].Cast<CheckBox>().CurrentValue && ManaPercent >= SubMenu["LastHit"]["LastHitMana"].Cast<Slider>().CurrentValue)
             {
                 var Minions = EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy, myHero.Position, myHero.GetAutoAttackRange(), true);
                 foreach (var minions in
@@ -587,7 +587,7 @@ namespace GosuMechanics_Vayne
 
         private static void LaneClear()
         {
-            if (Q.IsReady() && SubMenu["LaneClear"]["Q"].Cast<CheckBox>().CurrentValue)
+            if (Q.IsReady() && SubMenu["LaneClear"]["Q"].Cast<CheckBox>().CurrentValue && ManaPercent >= SubMenu["LaneClear"]["LaneClearMana"].Cast<Slider>().CurrentValue)
             {
                 var Minions = EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy, myHero.Position, Q.Range, true);
                 foreach (var minions in
@@ -608,34 +608,10 @@ namespace GosuMechanics_Vayne
         {
             Obj_AI_Base jungleMobs = EntityManager.MinionsAndMonsters.GetJungleMonsters(myHero.Position, Q.Range, true).FirstOrDefault();
             {
-                if (SubMenu["JungleClear"]["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(Q.Range))
+                if (SubMenu["JungleClear"]["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(Q.Range) && ManaPercent >= SubMenu["JungleClear"]["JungleClearMana"].Cast<Slider>().CurrentValue)
                 {
                     Q.Cast(myHero.GetTumblePos());
                     Console.WriteLine("jungle Q");
-                }
-                if (SubMenu["JungleClear"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(E.Range))
-                {
-                    if (jungleMobs.BaseSkinName == "SRU_Razorbeak" || jungleMobs.BaseSkinName == "SRU_Red" ||
-                    jungleMobs.BaseSkinName == "SRU_Blue" ||
-                    jungleMobs.BaseSkinName == "SRU_Krug" || jungleMobs.BaseSkinName == "SRU_Gromp" ||
-                    jungleMobs.BaseSkinName == "Sru_Crab")
-                    {
-                        var pushDistance = 425;
-                        var targetPosition = E.GetPrediction(jungleMobs, false, -1, null).UnitPosition;
-                        var pushDirection = (targetPosition - ObjectManager.Player.ServerPosition).Normalized();
-                        float checkDistance = pushDistance / 40f;
-                        for (int i = 0; i < 40; i++)
-                        {
-                            Vector3 finalPosition = targetPosition + (pushDirection * checkDistance * i);
-                            var collFlags = NavMesh.GetCollisionFlags(finalPosition);
-                            if (collFlags.HasFlag(CollisionFlags.Wall) || collFlags.HasFlag(CollisionFlags.Building))
-                            {
-                                E.Cast(jungleMobs);
-                                Orbwalker.ForcedTarget = jungleMobs;
-                                Console.WriteLine("jungle E");
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -643,7 +619,7 @@ namespace GosuMechanics_Vayne
         {
             Obj_AI_Base jungleMobs = EntityManager.MinionsAndMonsters.GetJungleMonsters(myHero.Position, Q.Range, true).FirstOrDefault();
             {
-                if (SubMenu["JungleClear"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(E.Range))
+                if (SubMenu["JungleClear"]["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && jungleMobs != null && jungleMobs.IsValidTarget(E.Range) && ManaPercent >= SubMenu["JungleClear"]["JungleClearMana"].Cast<Slider>().CurrentValue)
                 {
                     if (jungleMobs.BaseSkinName == "SRU_Razorbeak" || jungleMobs.BaseSkinName == "SRU_Red" ||
                     jungleMobs.BaseSkinName == "SRU_Blue" ||

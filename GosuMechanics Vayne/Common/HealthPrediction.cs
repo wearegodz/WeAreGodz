@@ -105,7 +105,7 @@ namespace GosuMechanics_Vayne.Common
                     attack.Target.IsValidTarget(float.MaxValue, false) && attack.Target.NetworkId == unit.NetworkId)
                 {
                     var landTime = attack.StartTick + attack.Delay +
-                                   1000 * Math.Max(0, unit.Distance(attack.Source) - attack.Source.BoundingRadius) / attack.ProjectileSpeed + delay;
+                                   1000 * Math.Max(0, unit.Distance2(attack.Source) - attack.Source.BoundingRadius) / attack.ProjectileSpeed + delay;
 
                     if (/*Utils.GameTimeTickCount < landTime - delay &&*/ landTime < Utils.GameTimeTickCount + time)
                     {
@@ -139,7 +139,7 @@ namespace GosuMechanics_Vayne.Common
                     while (fromT < toT)
                     {
                         if (fromT >= Utils.GameTimeTickCount &&
-                            (fromT + attack.Delay + Math.Max(0, unit.Distance(attack.Source) - attack.Source.BoundingRadius) / attack.ProjectileSpeed < toT))
+                            (fromT + attack.Delay + Math.Max(0, unit.Distance2(attack.Source) - attack.Source.BoundingRadius) / attack.ProjectileSpeed < toT))
                         {
                             n++;
                         }

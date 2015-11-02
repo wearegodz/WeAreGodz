@@ -55,11 +55,12 @@ namespace GosuMechanics_Vayne
         {
             if (myHero.Hero != Champion.Vayne) { return; }
             Chat.Print("<font color=\"#F20000\"><b>GosuMechanics Vayne:</b></font> Loaded!");
+            Chat.Print("Use Orbwalker2 and TargetSelector2");
 
             Q = new Spell2(SpellSlot.Q);
             W = new Spell2(SpellSlot.W);
             E = new Spell2(SpellSlot.E, 590f);
-            E.SetTargetted(0.25f, 2000f);
+            E.SetTargetted(0.25f, 2200f);
             R = new Spell2(SpellSlot.R);
 
             var slot = myHero.GetSpellSlotFromName("summonerheal");
@@ -85,7 +86,6 @@ namespace GosuMechanics_Vayne
                 {
                     sender.DisplayName = Q2[changeArgs.NewValue];
                 };
-
             SubMenu["Combo"].AddSeparator(10);
             SubMenu["Combo"].Add("E", new CheckBox("Use E", true));
             SubMenu["Combo"].Add("ELast", new CheckBox("Use E Secure Kill", true));
@@ -233,9 +233,9 @@ namespace GosuMechanics_Vayne
             }
             if (SubMenu["Misc"]["AntiGapQ"].Cast<CheckBox>().CurrentValue && Q.IsReady())
             {
-                if (myHero.Distance(gapcloser.End) < 425)
+                if (myHero.Distance4(gapcloser.End) < 425)
                 {
-                    Tumble.Cast(myHero.Position.Extend(gapcloser.End, -300).To3D());
+                    Tumble.Cast(myHero.Position.Extend2(gapcloser.End, -300));
                 }
             }
 
@@ -263,11 +263,11 @@ namespace GosuMechanics_Vayne
                     case "Smart":
                         tumblePosition = tg.GetTumblePos();
                         break;
-                    case "To MousePos":
+                    default:
                         tumblePosition = Game.CursorPos;
                         break;
                 }
-                Tumble.Cast(tg.GetTumblePos());
+                Tumble.Cast(tumblePosition);
             }
             switch (orbwalker.ActiveMode)
             {
@@ -279,8 +279,7 @@ namespace GosuMechanics_Vayne
                     LastHit();
                     break;
             }
-        }
-
+        }     
         private static void Obj_AI_Base_OnCreate(GameObject sender, EventArgs args)
         {
 
@@ -293,7 +292,7 @@ namespace GosuMechanics_Vayne
                     rengarLeap = enemy;
                 }
             }
-            if (rengarLeap != null && SubMenu["Misc"]["UseEInterrupt"].Cast<CheckBox>().CurrentValue && myHero.Distance(rengarLeap, true) < 1000 * 1000)
+            if (rengarLeap != null && SubMenu["Misc"]["UseEInterrupt"].Cast<CheckBox>().CurrentValue && myHero.Distance2(rengarLeap, true) < 1000 * 1000)
             {
                 CastCondemn();
             }
@@ -317,11 +316,11 @@ namespace GosuMechanics_Vayne
 
             if (enemy != null)
             {
-                var mousePos = myHero.Position.Extend(Game.CursorPos, Q.Range);
+                var mousePos = myHero.Position.Extend2(Game.CursorPos, Q.Range);
                 if (SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed &&
                      enemy.IsValidTarget(myHero.GetAutoAttackRange()) && Q.IsReady())
                 {
-                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true);
+                    myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos, true);
                     orbwalker.ForceTarget(enemy);
                 }
 
@@ -338,7 +337,7 @@ namespace GosuMechanics_Vayne
 
             foreach (var Etarget in EntityManager.Heroes.Enemies.Where(Etarget => Etarget.IsValidTarget(E.Range) && Etarget.Path.Count() < 2))
             {
-                if (SubMenu["Combo"]["ELast"].Cast<CheckBox>().CurrentValue && E.IsReady() && myHero.CountEnemiesInRange(600) <= 1)
+                if (SubMenu["Combo"]["ELast"].Cast<CheckBox>().CurrentValue && E.IsReady() && myHero.CountEnemiesInRange2(600) <= 1)
                 {
                     var dmgE = myHero.GetSpellDamage2(Etarget, SpellSlot.E);
                     if (dmgE > Etarget.Health || (WTarget(Etarget) == 2 && dmgE + Wdmg(Etarget) > Etarget.Health))
@@ -460,7 +459,7 @@ namespace GosuMechanics_Vayne
                 if (bestEnemy == null)
                     bestEnemy = target;
 
-                else if (myHero.Distance(target.Position) < myHero.Distance(bestEnemy.Position))
+                else if (myHero.Distance4(target.Position) < myHero.Distance4(bestEnemy.Position))
                     bestEnemy = target;
 
                 if (SubMenu["Combo"]["castE"].Cast<KeyBind>().CurrentValue && bestEnemy != null)
@@ -479,7 +478,7 @@ namespace GosuMechanics_Vayne
             }
 
             if (!sender.IsMe) return;
-            var mousePos = myHero.Position.Extend(Game.CursorPos, Q.Range);
+            var mousePos = myHero.Position.Extend2(Game.CursorPos, Q.Range);
             if (args.SData.Name.ToLower().Contains("attack"))
             {
                 Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
@@ -515,7 +514,7 @@ namespace GosuMechanics_Vayne
         private static void Combo()
         {
             if (Heal != null && SubMenu["Misc"]["heal"].Cast<CheckBox>().CurrentValue && Heal.IsReady() && HealthPercent <= SubMenu["Misc"]["hp"].Cast<Slider>().CurrentValue
-                 && myHero.CountEnemiesInRange(600) > 0 && Heal.IsReady())
+                 && myHero.CountEnemiesInRange2(600) > 0 && Heal.IsReady())
             {
                 Heal.Cast();
                 Console.WriteLine("heal ");
@@ -534,16 +533,16 @@ namespace GosuMechanics_Vayne
                 Condemn();
                 Console.WriteLine(" E");
             }
-            if (SubMenu["Combo"]["R"].Cast<CheckBox>().CurrentValue && myHero.CountEnemiesInRange(600f) >= (SubMenu["Combo"]["R2"].Cast<Slider>().CurrentValue) && R.IsReady())
+            if (SubMenu["Combo"]["R"].Cast<CheckBox>().CurrentValue && myHero.CountEnemiesInRange2(600f) >= (SubMenu["Combo"]["R2"].Cast<Slider>().CurrentValue) && R.IsReady())
             {
                 R.Cast();
                 Console.WriteLine("R");
             }
-            var mousePos = myHero.Position.Extend(Game.CursorPos, Q.Range);
+            var mousePos = myHero.Position.Extend2(Game.CursorPos, Q.Range);
 
-            if ((SubMenu["Combo"]["Qult"].Cast<CheckBox>().CurrentValue && Q.IsReady() && myHero.HasBuff("vayneinquisition") && myHero.CountEnemiesInRange(1500) > 0 && myHero.CountEnemiesInRange(670) != 1))
+            if ((SubMenu["Combo"]["Qult"].Cast<CheckBox>().CurrentValue && Q.IsReady() && myHero.HasBuff("vayneinquisition") && myHero.CountEnemiesInRange2(1500) > 0 && myHero.CountEnemiesInRange2(670) != 1))
             {
-                myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos.To3D(), true);
+                myHero.Spellbook.CastSpell(SpellSlot.Q, mousePos, true);
                 Console.WriteLine(" RQ");
             }
             if (SubMenu["Combo"]["useItems"].Cast<CheckBox>().CurrentValue)
@@ -559,7 +558,7 @@ namespace GosuMechanics_Vayne
                     Item.UseItem((int)ItemId.Bilgewater_Cutlass, target);
                 }
                 if (Item.HasItem((int)ItemId.Youmuus_Ghostblade, myHero) && Item.CanUseItem((int)ItemId.Youmuus_Ghostblade)
-                   && myHero.Distance(target.Position) <= myHero.GetAutoAttackRange())
+                   && myHero.Distance4(target.Position) <= myHero.GetAutoAttackRange())
                 {
                     Item.UseItem((int)ItemId.Youmuus_Ghostblade);
                 }
@@ -578,7 +577,7 @@ namespace GosuMechanics_Vayne
                     if (minions != null && minions.IsValidTarget(E.Range))
                     {
                         Q.Cast(myHero.GetTumblePos());
-                        Orbwalker.ForcedTarget = minions;
+                        orbwalker.ForceTarget(minions);
                         Console.WriteLine("lasthit Q");
                     }
                 }
@@ -597,7 +596,7 @@ namespace GosuMechanics_Vayne
                     if (minions != null && minions.IsValidTarget(E.Range) && minions.IsVisible)
                     {
                         Q.Cast(myHero.GetTumblePos());
-                        Orbwalker.ForcedTarget = minions;
+                        orbwalker.ForceTarget(minions);
                         Console.WriteLine("laneclear Q");
                     }
                 }
@@ -628,7 +627,7 @@ namespace GosuMechanics_Vayne
                     {
                         var pushDistance = 425;
                         var targetPosition = E.GetPrediction(jungleMobs, false, -1, null).UnitPosition;
-                        var pushDirection = (targetPosition - ObjectManager.Player.ServerPosition).Normalized();
+                        var pushDirection = (targetPosition - ObjectManager.Player.ServerPosition).Normalized2();
                         float checkDistance = pushDistance / 40f;
                         for (int i = 0; i < 40; i++)
                         {
@@ -637,7 +636,7 @@ namespace GosuMechanics_Vayne
                             if (collFlags.HasFlag(CollisionFlags.Wall) || collFlags.HasFlag(CollisionFlags.Building))
                             {
                                 E.Cast(jungleMobs);
-                                Orbwalker.ForcedTarget = jungleMobs;
+                                orbwalker.ForceTarget(jungleMobs);
                                 Console.WriteLine("jungle E");
                             }
                         }
@@ -659,7 +658,7 @@ namespace GosuMechanics_Vayne
         {
             return
                 ObjectManager.Get<Obj_AI_Turret>()
-                    .Any(i => i.IsEnemy && !i.IsDead && i.Distance(pos) < 850 + ObjectManager.Player.BoundingRadius);
+                    .Any(i => i.IsEnemy && !i.IsDead && i.Distance4(pos) < 850 + ObjectManager.Player.BoundingRadius);
         }
 
         public static AIHeroClient FocusWTarget
@@ -694,7 +693,7 @@ namespace GosuMechanics_Vayne
             if (rengarLeap.ChampionName == "Rengar")
             {
                 if (rengarLeap.IsValidTarget(E.Range) && E.IsReady() &&
-                    rengarLeap.Distance(myHero) <= E.Range)
+                    rengarLeap.Distance2(myHero) <= E.Range)
                 {
                     E.CastOnUnit(rengarLeap);
                     Console.WriteLine("E Rengar");
@@ -708,13 +707,13 @@ namespace GosuMechanics_Vayne
                 foreach (var hero in from hero in ObjectManager.Get<AIHeroClient>().Where(hero => hero.IsValidTarget(550f))
                                      let prediction = E.GetPrediction(hero)
                                      where NavMesh.GetCollisionFlags(
-                                         prediction.UnitPosition.To2D()
-                                             .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                         prediction.UnitPosition.To2D2()
+                                             .Extend2(ObjectManager.Player.ServerPosition.To2D2(),
                                                  -SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue)
                                              .To3D())
                                          .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
-                                             prediction.UnitPosition.To2D()
-                                                 .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                             prediction.UnitPosition.To2D2()
+                                                 .Extend2(ObjectManager.Player.ServerPosition.To2D2(),
                                                      -(SubMenu["Combo"]["PushDistance"].Cast<Slider>().CurrentValue / 2))
                                                  .To3D())
                                              .HasFlag(CollisionFlags.Wall)

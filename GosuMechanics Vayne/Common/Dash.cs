@@ -5,7 +5,7 @@ using SharpDX;
 using System.Text;
 using System.Threading.Tasks;
 using EloBuddy;
-using EloBuddy.SDK;
+//using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
@@ -34,19 +34,19 @@ namespace GosuMechanics_Vayne.Common
 
                 if (args.IsDash)
                 {
-                    var path = new List<Vector2> { sender.ServerPosition.To2D() };
-                    path.AddRange(args.Path.ToList().To2D());
+                    var path = new List<Vector2> { sender.ServerPosition.To2D2() };
+                    path.AddRange(args.Path.ToList().To2D2());
 
                     DetectedDashes[sender.NetworkId].StartTick = Utils.TickCount;
                     DetectedDashes[sender.NetworkId].Speed = args.Speed;
-                    DetectedDashes[sender.NetworkId].StartPos = sender.ServerPosition.To2D();
+                    DetectedDashes[sender.NetworkId].StartPos = sender.ServerPosition.To2D2();
                     DetectedDashes[sender.NetworkId].Unit = sender;
                     DetectedDashes[sender.NetworkId].Path = path;
                     DetectedDashes[sender.NetworkId].EndPos = DetectedDashes[sender.NetworkId].Path.Last();
                     DetectedDashes[sender.NetworkId].EndTick = DetectedDashes[sender.NetworkId].StartTick +
                                                            (int)
                                                                (1000 *
-                                                                (DetectedDashes[sender.NetworkId].EndPos.Distance(
+                                                                (DetectedDashes[sender.NetworkId].EndPos.Distance7(
                                                                     DetectedDashes[sender.NetworkId].StartPos) / DetectedDashes[sender.NetworkId].Speed));
                     DetectedDashes[sender.NetworkId].Duration = DetectedDashes[sender.NetworkId].EndTick - DetectedDashes[sender.NetworkId].StartTick;
 

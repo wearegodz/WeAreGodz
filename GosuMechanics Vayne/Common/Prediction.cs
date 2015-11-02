@@ -107,7 +107,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public Vector3 From
         {
-            get { return _from.To2D().IsValid() ? _from : ObjectManager.Player.ServerPosition; }
+            get { return _from.To2D2().IsValid() ? _from : ObjectManager.Player.ServerPosition; }
             set { _from = value; }
         }
 
@@ -118,9 +118,9 @@ namespace GosuMechanics_Vayne.Common
         {
             get
             {
-                return _rangeCheckFrom.To2D().IsValid()
+                return _rangeCheckFrom.To2D2().IsValid()
                     ? _rangeCheckFrom
-                    : (From.To2D().IsValid() ? From : ObjectManager.Player.ServerPosition);
+                    : (From.To2D2().IsValid() ? From : ObjectManager.Player.ServerPosition);
             }
             set { _rangeCheckFrom = value; }
         }
@@ -161,7 +161,7 @@ namespace GosuMechanics_Vayne.Common
         {
             get
             {
-                return _castPosition.IsValid() && _castPosition.To2D().IsValid()
+                return _castPosition.IsValid() && _castPosition.To2D2().IsValid()
                     ? _castPosition.SetZ()
                     : Input.Unit.ServerPosition;
             }
@@ -181,7 +181,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public Vector3 UnitPosition
         {
-            get { return _unitPosition.To2D().IsValid() ? _unitPosition.SetZ() : Input.Unit.ServerPosition; }
+            get { return _unitPosition.To2D2().IsValid() ? _unitPosition.SetZ() : Input.Unit.ServerPosition; }
             set { _unitPosition = value; }
         }
     }
@@ -261,7 +261,7 @@ namespace GosuMechanics_Vayne.Common
 
             //Target too far away.
             if (Math.Abs(input.Range - float.MaxValue) > float.Epsilon &&
-                input.Unit.Distance(input.RangeCheckFrom, true) > Math.Pow(input.Range * 1.5, 2))
+                input.Unit.Distance4(input.RangeCheckFrom, true) > Math.Pow(input.Range * 1.5, 2))
             {
                 return new PredictionOutput { Input = input };
             }
@@ -295,25 +295,25 @@ namespace GosuMechanics_Vayne.Common
             if (Math.Abs(input.Range - float.MaxValue) > float.Epsilon)
             {
                 if (result.Hitchance >= HitChance.High &&
-                    input.RangeCheckFrom.Distance(input.Unit.Position, true) >
+                    input.RangeCheckFrom.Distance6(input.Unit.Position, true) >
                     Math.Pow(input.Range + input.RealRadius * 3 / 4, 2))
                 {
                     result.Hitchance = HitChance.Medium;
                 }
 
-                if (input.RangeCheckFrom.Distance(result.UnitPosition, true) >
+                if (input.RangeCheckFrom.Distance6(result.UnitPosition, true) >
                     Math.Pow(input.Range + (input.Type == SkillshotType.SkillshotCircle ? input.RealRadius : 0), 2))
                 {
                     result.Hitchance = HitChance.OutOfRange;
                 }
 
-                if (input.RangeCheckFrom.Distance(result.CastPosition, true) > Math.Pow(input.Range, 2))
+                if (input.RangeCheckFrom.Distance6(result.CastPosition, true) > Math.Pow(input.Range, 2))
                 {
                     if (result.Hitchance != HitChance.OutOfRange)
                     {
                         result.CastPosition = input.RangeCheckFrom +
                                               input.Range *
-                                              (result.UnitPosition - input.RangeCheckFrom).To2D().Normalized().To3D();
+                                              (result.UnitPosition - input.RangeCheckFrom).To2D2().Normalized2().To3D2();
                     }
                     else
                     {
@@ -346,8 +346,8 @@ namespace GosuMechanics_Vayne.Common
                 //Mid air:
                 var endP = dashData.Path.Last();
                 var dashPred = GetPositionOnPath(
-                    input, new List<Vector2> { input.Unit.ServerPosition.To2D(), endP }, dashData.Speed);
-                if (dashPred.Hitchance >= HitChance.High && dashPred.UnitPosition.To2D().Distance(input.Unit.Position.To2D(), endP, true) < 200)
+                    input, new List<Vector2> { input.Unit.ServerPosition.To2D2(), endP }, dashData.Speed);
+                if (dashPred.Hitchance >= HitChance.High && dashPred.UnitPosition.To2D2().Distance(input.Unit.Position.To2D2(), endP, true) < 200)
                 {
                     dashPred.CastPosition = dashPred.UnitPosition;
                     dashPred.Hitchance = HitChance.Dashing;
@@ -358,9 +358,9 @@ namespace GosuMechanics_Vayne.Common
                 if (dashData.Path.PathLength() > 200)
                 {
 
-                    var timeToPoint = input.Delay / 2f + input.From.To2D().Distance(endP) / input.Speed - 0.25f;
+                    var timeToPoint = input.Delay / 2f + input.From.To2D2().Distance7(endP) / input.Speed - 0.25f;
                     if (timeToPoint <=
-                        input.Unit.Distance(endP) / dashData.Speed + input.RealRadius / input.Unit.MoveSpeed)
+                        input.Unit.Distance5(endP) / dashData.Speed + input.RealRadius / input.Unit.MoveSpeed)
                     {
                         return new PredictionOutput
                         {
@@ -382,7 +382,7 @@ namespace GosuMechanics_Vayne.Common
 
         internal static PredictionOutput GetImmobilePrediction(PredictionInput input, double remainingImmobileT)
         {
-            var timeToReachTargetPosition = input.Delay + input.Unit.Distance(input.From) / input.Speed;
+            var timeToReachTargetPosition = input.Delay + input.Unit.Distance4(input.From) / input.Speed;
 
             if (timeToReachTargetPosition <= remainingImmobileT + input.RealRadius / input.Unit.MoveSpeed)
             {
@@ -408,7 +408,7 @@ namespace GosuMechanics_Vayne.Common
         {
             var speed = input.Unit.MoveSpeed;
 
-            if (input.Unit.Distance(input.From, true) < 200 * 200)
+            if (input.Unit.Distance4(input.From, true) < 200 * 200)
             {
                 //input.Delay /= 2;
                 speed /= 1.5f;
@@ -459,11 +459,11 @@ namespace GosuMechanics_Vayne.Common
                 {
                     var a = path[i];
                     var b = path[i + 1];
-                    var d = a.Distance(b);
+                    var d = a.Distance7(b);
 
                     if (d >= tDistance)
                     {
-                        var direction = (b - a).Normalized();
+                        var direction = (b - a).Normalized2();
 
                         var cp = a + direction * tDistance;
                         var p = a +
@@ -493,7 +493,7 @@ namespace GosuMechanics_Vayne.Common
                 var d = input.Delay * speed - input.RealRadius;
                 if (input.Type == SkillshotType.SkillshotLine || input.Type == SkillshotType.SkillshotCone)
                 {
-                    if (input.From.Distance(input.Unit.ServerPosition, true) < 200 * 200)
+                    if (input.From.Distance6(input.Unit.ServerPosition, true) < 200 * 200)
                     {
                         d = input.Delay * speed;
                     }
@@ -505,29 +505,29 @@ namespace GosuMechanics_Vayne.Common
                 {
                     var a = path[i];
                     var b = path[i + 1];
-                    var tB = a.Distance(b) / speed;
-                    var direction = (b - a).Normalized();
+                    var tB = a.Distance7(b) / speed;
+                    var direction = (b - a).Normalized2();
                     a = a - speed * tT * direction;
-                    var sol = Geometry2.VectorMovementCollision(a, b, speed, input.From.To2D(), input.Speed, tT);
+                    var sol = Geometry2.VectorMovementCollision(a, b, speed, input.From.To2D2(), input.Speed, tT);
                     var t = (float)sol[0];
                     var pos = (Vector2)sol[1];
 
                     if (pos.IsValid() && t >= tT && t <= tT + tB)
                     {
-                        if (pos.Distance(b, true) < 20)
+                        if (pos.Distance7(b, true) < 20)
                             break;
                         var p = pos + input.RealRadius * direction;
 
                         if (input.Type == SkillshotType.SkillshotLine && false)
                         {
-                            var alpha = (input.From.To2D() - p).AngleBetween(a - b);
+                            var alpha = (input.From.To2D2() - p).AngleBetween2(a - b);
                             if (alpha > 30 && alpha < 180 - 30)
                             {
-                                var beta = (float)Math.Asin(input.RealRadius / p.Distance(input.From));
-                                var cp1 = input.From.To2D() + (p - input.From.To2D()).Rotated(beta);
-                                var cp2 = input.From.To2D() + (p - input.From.To2D()).Rotated(-beta);
+                                var beta = (float)Math.Asin(input.RealRadius / p.Distance8(input.From));
+                                var cp1 = input.From.To2D2() + (p - input.From.To2D2()).Rotated2(beta);
+                                var cp2 = input.From.To2D2() + (p - input.From.To2D2()).Rotated2(-beta);
 
-                                pos = cp1.Distance(pos, true) < cp2.Distance(pos, true) ? cp1 : cp2;
+                                pos = cp1.Distance7(pos, true) < cp2.Distance7(pos, true) ? cp1 : cp2;
                             }
                         }
 
@@ -585,7 +585,7 @@ namespace GosuMechanics_Vayne.Common
                 var prediction = Prediction2.GetPrediction(input, false, false);
                 if (prediction.Hitchance >= HitChance.High)
                 {
-                    result.Add(new PossibleTarget { Position = prediction.UnitPosition.To2D(), Unit = enemy });
+                    result.Add(new PossibleTarget { Position = prediction.UnitPosition.To2D2(), Unit = enemy });
                 }
             }
             return result;
@@ -598,7 +598,7 @@ namespace GosuMechanics_Vayne.Common
                 var mainTargetPrediction = Prediction2.GetPrediction(input, false, true);
                 var posibleTargets = new List<PossibleTarget>
                 {
-                    new PossibleTarget { Position = mainTargetPrediction.UnitPosition.To2D(), Unit = input.Unit }
+                    new PossibleTarget { Position = mainTargetPrediction.UnitPosition.To2D2(), Unit = input.Unit }
                 };
 
                 if (mainTargetPrediction.Hitchance >= HitChance.Medium)
@@ -612,7 +612,7 @@ namespace GosuMechanics_Vayne.Common
                     var mecCircle = MEC.GetMec(posibleTargets.Select(h => h.Position).ToList());
 
                     if (mecCircle.Radius <= input.RealRadius - 10 &&
-                        Vector2.DistanceSquared(mecCircle.Center, input.RangeCheckFrom.To2D()) <
+                        Vector2.DistanceSquared(mecCircle.Center, input.RangeCheckFrom.To2D2()) <
                         input.Range * input.Range)
                     {
                         return new PredictionOutput
@@ -649,11 +649,11 @@ namespace GosuMechanics_Vayne.Common
             internal static int GetHits(Vector2 end, double range, float angle, List<Vector2> points)
             {
                 return (from point in points
-                        let edge1 = end.Rotated(-angle / 2)
-                        let edge2 = edge1.Rotated(angle)
+                        let edge1 = end.Rotated2(-angle / 2)
+                        let edge2 = edge1.Rotated2(angle)
                         where
-                            point.Distance(new Vector2(), true) < range * range && edge1.CrossProduct(point) > 0 &&
-                            point.CrossProduct(edge2) > 0
+                            point.Distance7(new Vector2(), true) < range * range && edge1.CrossProduct2(point) > 0 &&
+                            point.CrossProduct2(edge2) > 0
                         select point).Count();
             }
 
@@ -662,7 +662,7 @@ namespace GosuMechanics_Vayne.Common
                 var mainTargetPrediction = Prediction2.GetPrediction(input, false, true);
                 var posibleTargets = new List<PossibleTarget>
                 {
-                    new PossibleTarget { Position = mainTargetPrediction.UnitPosition.To2D(), Unit = input.Unit }
+                    new PossibleTarget { Position = mainTargetPrediction.UnitPosition.To2D2(), Unit = input.Unit }
                 };
 
                 if (mainTargetPrediction.Hitchance >= HitChance.Medium)
@@ -677,7 +677,7 @@ namespace GosuMechanics_Vayne.Common
 
                     foreach (var target in posibleTargets)
                     {
-                        target.Position = target.Position - input.From.To2D();
+                        target.Position = target.Position - input.From.To2D2();
                     }
 
                     for (var i = 0; i < posibleTargets.Count; i++)
@@ -709,7 +709,7 @@ namespace GosuMechanics_Vayne.Common
                         }
                     }
 
-                    if (bestCandidateHits > 1 && input.From.To2D().Distance(bestCandidate, true) > 50 * 50)
+                    if (bestCandidateHits > 1 && input.From.To2D2().Distance7(bestCandidate, true) > 50 * 50)
                     {
                         return new PredictionOutput
                         {
@@ -736,15 +736,15 @@ namespace GosuMechanics_Vayne.Common
             {
                 var middlePoint = (from + to) / 2;
                 var intersections = Geometry2.CircleCircleIntersection(
-                    from, middlePoint, radius, from.Distance(middlePoint));
+                    from, middlePoint, radius, from.Distance7(middlePoint));
 
                 if (intersections.Length > 1)
                 {
                     var c1 = intersections[0];
                     var c2 = intersections[1];
 
-                    c1 = from + range * (to - c1).Normalized();
-                    c2 = from + range * (to - c2).Normalized();
+                    c1 = from + range * (to - c1).Normalized2();
+                    c2 = from + range * (to - c2).Normalized2();
 
                     return new[] { c1, c2 };
                 }
@@ -757,7 +757,7 @@ namespace GosuMechanics_Vayne.Common
                 var mainTargetPrediction = Prediction2.GetPrediction(input, false, true);
                 var posibleTargets = new List<PossibleTarget>
                 {
-                    new PossibleTarget { Position = mainTargetPrediction.UnitPosition.To2D(), Unit = input.Unit }
+                    new PossibleTarget { Position = mainTargetPrediction.UnitPosition.To2D2(), Unit = input.Unit }
                 };
                 if (mainTargetPrediction.Hitchance >= HitChance.Medium)
                 {
@@ -771,7 +771,7 @@ namespace GosuMechanics_Vayne.Common
                     foreach (var target in posibleTargets)
                     {
                         var targetCandidates = GetCandidates(
-                            input.From.To2D(), target.Position, (input.Radius), input.Range);
+                            input.From.To2D2(), target.Position, (input.Radius), input.Range);
                         candidates.AddRange(targetCandidates);
                     }
 
@@ -784,10 +784,10 @@ namespace GosuMechanics_Vayne.Common
                     {
                         if (
                             GetHits(
-                                input.From.To2D(), candidate, (input.Radius + input.Unit.BoundingRadius / 3 - 10),
+                                input.From.To2D2(), candidate, (input.Radius + input.Unit.BoundingRadius / 3 - 10),
                                 new List<Vector2> { posibleTargets[0].Position }).Count() == 1)
                         {
-                            var hits = GetHits(input.From.To2D(), candidate, input.Radius, positionsList).ToList();
+                            var hits = GetHits(input.From.To2D2(), candidate, input.Radius, positionsList).ToList();
                             var hitsCount = hits.Count;
                             if (hitsCount >= bestCandidateHits)
                             {
@@ -808,14 +808,14 @@ namespace GosuMechanics_Vayne.Common
                         {
                             for (var j = 0; j < bestCandidateHitPoints.Count; j++)
                             {
-                                var startP = input.From.To2D();
+                                var startP = input.From.To2D2();
                                 var endP = bestCandidate;
-                                var proj1 = positionsList[i].ProjectOn(startP, endP);
-                                var proj2 = positionsList[j].ProjectOn(startP, endP);
+                                var proj1 = positionsList[i].ProjectOn2(startP, endP);
+                                var proj2 = positionsList[j].ProjectOn2(startP, endP);
                                 var dist = Vector2.DistanceSquared(bestCandidateHitPoints[i], proj1.LinePoint) +
                                            Vector2.DistanceSquared(bestCandidateHitPoints[j], proj2.LinePoint);
                                 if (dist >= maxDistance &&
-                                    (proj1.LinePoint - positionsList[i]).AngleBetween(
+                                    (proj1.LinePoint - positionsList[i]).AngleBetween2(
                                         proj2.LinePoint - positionsList[j]) > 90)
                                 {
                                     maxDistance = dist;
@@ -862,7 +862,7 @@ namespace GosuMechanics_Vayne.Common
             if (sender.IsValid && sender.Team != ObjectManager.Player.Team && args.SData.Name == "YasuoWMovingWall")
             {
                 _wallCastT = Utils.TickCount;
-                _yasuoWallCastedPos = sender.ServerPosition.To2D();
+                _yasuoWallCastedPos = sender.ServerPosition.To2D2();
             }
         }
 
@@ -891,8 +891,8 @@ namespace GosuMechanics_Vayne.Common
                                 input.Unit = minion;
                                 var minionPrediction = Prediction2.GetPrediction(input, false, false);
                                 if (
-                                    minionPrediction.UnitPosition.To2D()
-                                        .Distance(input.From.To2D(), position.To2D(), true, true) <=
+                                    minionPrediction.UnitPosition.To2D2()
+                                        .Distance(input.From.To2D2(), position.To2D2(), true, true) <=
                                     Math.Pow((input.Radius + 15 + minion.BoundingRadius), 2))
                                 {
                                     result.Add(minion);
@@ -910,8 +910,8 @@ namespace GosuMechanics_Vayne.Common
                                 input.Unit = hero;
                                 var prediction = Prediction2.GetPrediction(input, false, false);
                                 if (
-                                    prediction.UnitPosition.To2D()
-                                        .Distance(input.From.To2D(), position.To2D(), true, true) <=
+                                    prediction.UnitPosition.To2D2()
+                                        .Distance(input.From.To2D2(), position.To2D2(), true, true) <=
                                     Math.Pow((input.Radius + 50 + hero.BoundingRadius), 2))
                                 {
                                     result.Add(hero);
@@ -929,8 +929,8 @@ namespace GosuMechanics_Vayne.Common
                                 input.Unit = hero;
                                 var prediction = Prediction2.GetPrediction(input, false, false);
                                 if (
-                                    prediction.UnitPosition.To2D()
-                                        .Distance(input.From.To2D(), position.To2D(), true, true) <=
+                                    prediction.UnitPosition.To2D2()
+                                        .Distance(input.From.To2D2(), position.To2D2(), true, true) <=
                                     Math.Pow((input.Radius + 50 + hero.BoundingRadius), 2))
                                 {
                                     result.Add(hero);
@@ -943,7 +943,7 @@ namespace GosuMechanics_Vayne.Common
                             var step = position.Distance(input.From) / 20;
                             for (var i = 0; i < 20; i++)
                             {
-                                var p = input.From.To2D().Extend(position.To2D(), step * i);
+                                var p = input.From.To2D2().Extend2(position.To2D2(), step * i);
                                 if (NavMesh.GetCollisionFlags(p.X, p.Y).HasFlag(CollisionFlags.Wall))
                                 {
                                     result.Add(ObjectManager.Player);
@@ -978,15 +978,15 @@ namespace GosuMechanics_Vayne.Common
                             var wallWidth = (300 + 50 * Convert.ToInt32(level));
 
                             var wallDirection =
-                                (wall.Position.To2D() - _yasuoWallCastedPos).Normalized().Perpendicular();
-                            var wallStart = wall.Position.To2D() + wallWidth / 2f * wallDirection;
+                                (wall.Position.To2D2() - _yasuoWallCastedPos).Normalized2().Perpendicular2();
+                            var wallStart = wall.Position.To2D2() + wallWidth / 2f * wallDirection;
                             var wallEnd = wallStart - wallWidth * wallDirection;
 
-                            if (wallStart.Intersection(wallEnd, position.To2D(), input.From.To2D()).Intersects)
+                            if (wallStart.Intersection2(wallEnd, position.To2D2(), input.From.To2D2()).Intersects)
                             {
                                 var t = Utils.TickCount +
-                                        (wallStart.Intersection(wallEnd, position.To2D(), input.From.To2D())
-                                            .Point.Distance(input.From) / input.Speed + input.Delay) * 1000;
+                                        (wallStart.Intersection2(wallEnd, position.To2D2(), input.From.To2D2())
+                                            .Point.Distance8(input.From) / input.Speed + input.Delay) * 1000;
                                 if (t < _wallCastT + 4000)
                                 {
                                     result.Add(ObjectManager.Player);
@@ -1050,7 +1050,7 @@ namespace GosuMechanics_Vayne.Common
                 StoredPaths.Add(sender.NetworkId, new List<StoredPath>());
             }
 
-            var newPath = new StoredPath { Tick = Utils.TickCount, Path = args.Path.ToList().To2D() };
+            var newPath = new StoredPath { Tick = Utils.TickCount, Path = args.Path.ToList().To2D2() };
             StoredPaths[sender.NetworkId].Add(newPath);
 
             if (StoredPaths[sender.NetworkId].Count > 50)
@@ -1081,7 +1081,7 @@ namespace GosuMechanics_Vayne.Common
             foreach (var path in paths)
             {
                 var k = 1; //(MaxTime - path.Time);
-                result = result + k * (path.EndPoint - unit.ServerPosition.To2D() /*path.StartPoint*/).Normalized();
+                result = result + k * (path.EndPoint - unit.ServerPosition.To2D2() /*path.StartPoint*/).Normalized2();
             }
 
             result /= paths.Count;

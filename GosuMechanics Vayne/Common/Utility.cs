@@ -32,7 +32,7 @@ namespace GosuMechanics_Vayne.Common
             }
 
             const float angle = 90;
-            return source.Direction.To2D().Perpendicular().AngleBetween((target.Position - source.Position).To2D()) < angle;
+            return source.Direction.To2D2().Perpendicular2().AngleBetween2((target.Position - source.Position).To2D2()) < angle;
         }
 
         /// <summary>
@@ -67,8 +67,8 @@ namespace GosuMechanics_Vayne.Common
 
             return !(range < float.MaxValue) ||
                    !(Vector2.DistanceSquared(
-                       (@from.To2D().IsValid() ? @from : ObjectManager.Player.ServerPosition).To2D(),
-                       unitPosition.To2D()) > range * range);
+                       (@from.To2D2().IsValid() ? @from : ObjectManager.Player.ServerPosition).To2D2(),
+                       unitPosition.To2D2()) > range * range);
         }
 
         public static SpellDataInst GetSpell(this AIHeroClient hero, SpellSlot slot)
@@ -184,7 +184,7 @@ namespace GosuMechanics_Vayne.Common
 
         public static Vector2 Randomize(this Vector2 position, int min, int max)
         {
-            return position.To3D().Randomize(min, max).To2D();
+            return position.To3D().Randomize(min, max).To2D2();
         }
 
         public static bool IsAutoAttack(this SpellData spellData)
@@ -256,16 +256,16 @@ namespace GosuMechanics_Vayne.Common
             var Distance = distance;
             if (distance < 0)
             {
-                path[0] = path[0] + distance * (path[1] - path[0]).Normalized();
+                path[0] = path[0] + distance * (path[1] - path[0]).Normalized2();
                 return path;
             }
 
             for (var i = 0; i < path.Count - 1; i++)
             {
-                var dist = path[i].Distance(path[i + 1]);
+                var dist = path[i].Distance7(path[i + 1]);
                 if (dist > Distance)
                 {
-                    result.Add(path[i] + Distance * (path[i + 1] - path[i]).Normalized());
+                    result.Add(path[i] + Distance * (path[i + 1] - path[i]).Normalized2());
                     for (var j = i + 1; j < path.Count; j++)
                     {
                         result.Add(path[j]);
@@ -287,19 +287,19 @@ namespace GosuMechanics_Vayne.Common
 
             if (unit.IsVisible)
             {
-                result.Add(unit.ServerPosition.To2D());
+                result.Add(unit.ServerPosition.To2D2());
                 var path = unit.Path;
                 if (path.Length > 0)
                 {
-                    var first = path[0].To2D();
-                    if (first.Distance(result[0], true) > 40)
+                    var first = path[0].To2D2();
+                    if (first.Distance7(result[0], true) > 40)
                     {
                         result.Add(first);
                     }
 
                     for (int i = 1; i < path.Length; i++)
                     {
-                        result.Add(path[i].To2D());
+                        result.Add(path[i].To2D2());
                     }
                 }
             }
@@ -332,7 +332,7 @@ namespace GosuMechanics_Vayne.Common
 
             foreach (var point in wp)
             {
-                time += point.Distance(lastPoint) / speed;
+                time += point.Distance7(lastPoint) / speed;
                 result.Add(new Vector2Time(point, time));
                 lastPoint = point;
             }
@@ -531,7 +531,7 @@ namespace GosuMechanics_Vayne.Common
 
         public static List<T> GetObjects<T>(this Vector3 position, float range) where T : GameObject, new()
         {
-            return ObjectManager.Get<T>().Where(x => position.Distance(x.Position, true) < range * range).ToList();
+            return ObjectManager.Get<T>().Where(x => position.Distance6(x.Position, true) < range * range).ToList();
         }
 
         public static List<T> GetObjects<T>(string objectName, float range, Vector3 rangeCheckFrom = new Vector3())
@@ -542,7 +542,7 @@ namespace GosuMechanics_Vayne.Common
                 rangeCheckFrom = ObjectManager.Player.ServerPosition;
             }
 
-            return ObjectManager.Get<T>().Where(x => rangeCheckFrom.Distance(x.Position, true) < range * range).ToList();
+            return ObjectManager.Get<T>().Where(x => rangeCheckFrom.Distance6(x.Position, true) < range * range).ToList();
         }
 
         internal static int GetVenomStacks(this Obj_AI_Base target)
@@ -550,7 +550,7 @@ namespace GosuMechanics_Vayne.Common
             for (var i = 1; i < 7; i++)
             {
                 if (ObjectManager.Get<Obj_GeneralParticleEmitter>()
-                        .Any(e => e.Position.Distance(target.ServerPosition) <= 70 &&
+                        .Any(e => e.Position.Distance6(target.ServerPosition) <= 70 &&
                                   e.Name == "twitch_poison_counter_0" + i + ".troy"))
                 {
                     return i;
@@ -574,7 +574,7 @@ namespace GosuMechanics_Vayne.Common
         {
             return hero.IsVisible &&
                    ObjectManager.Get<Obj_Shop>()
-                       .Any(s => s.Team == hero.Team && hero.Distance(s.Position, true) < 1562500); // 1250²
+                       .Any(s => s.Team == hero.Team && hero.Distance4(s.Position, true) < 1562500); // 1250²
         }
 
         public static bool InFountain(this AIHeroClient hero)
@@ -587,7 +587,7 @@ namespace GosuMechanics_Vayne.Common
             }
             return hero.IsVisible &&
                    ObjectManager.Get<Obj_SpawnPoint>()
-                       .Any(sp => sp.Team == hero.Team && hero.Distance(sp.Position, true) < fountainRange);
+                       .Any(sp => sp.Team == hero.Team && hero.Distance4(sp.Position, true) < fountainRange);
         }
 
         public static short GetPacketId(this GamePacketEventArgs gamePacketEventArgs)

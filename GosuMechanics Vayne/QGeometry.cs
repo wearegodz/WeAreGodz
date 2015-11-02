@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 using EloBuddy;
-using EloBuddy.SDK;
+//using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
@@ -13,6 +13,7 @@ using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using SharpDX.Direct3D;
 using ClipperLib;
+using GosuMechanics_Vayne.Common;
 using Color = System.Drawing.Color;
 using Path = System.Collections.Generic.List<ClipperLib.IntPoint>;
 using Paths = System.Collections.Generic.List<System.Collections.Generic.List<ClipperLib.IntPoint>>;
@@ -53,10 +54,10 @@ namespace GosuMechanics_Vayne
             {
                 var from = self[i];
                 var to = self[i + 1];
-                var d = (int)to.Distance(from);
+                var d = (int)to.Distance7(from);
                 if (d > distance)
                 {
-                    return from + distance * (to - from).Normalized();
+                    return from + distance * (to - from).Normalized2();
                 }
                 distance -= d;
             }
@@ -177,8 +178,8 @@ namespace GosuMechanics_Vayne
                 RStart = start;
                 REnd = end;
                 Width = width;
-                Direction = (end - start).Normalized();
-                Perpendicular = Direction.Perpendicular();
+                Direction = (end - start).Normalized2();
+                Perpendicular = Direction.Perpendicular2();
             }
 
             public Polygon ToPolygon(int offset = 0, float overrideWidth = -1)
@@ -253,10 +254,10 @@ namespace GosuMechanics_Vayne
                 var result = new Polygon();
                 var outRadius = (Radius + offset) / (float)Math.Cos(2 * Math.PI / CircleLineSegmentN);
                 result.Add(Center);
-                var Side1 = Direction.Rotated(-Angle * 0.5f);
+                var Side1 = Direction.Rotated2(-Angle * 0.5f);
                 for (var i = 0; i <= CircleLineSegmentN; i++)
                 {
-                    var cDirection = Side1.Rotated(i * Angle / CircleLineSegmentN).Normalized();
+                    var cDirection = Side1.Rotated2(i * Angle / CircleLineSegmentN).Normalized2();
                     result.Add(new Vector2(Center.X + outRadius * cDirection.X, Center.Y + outRadius * cDirection.Y));
                 }
                 return result;

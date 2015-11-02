@@ -370,7 +370,7 @@ namespace GosuMechanics_Vayne.Common
             Vector3? rangeCheckFrom = null)
         {
             return target.IsValidTarget() &&
-                   target.Distance(rangeCheckFrom ?? ObjectManager.Player.ServerPosition, true) <
+                   target.Distance4(rangeCheckFrom ?? ObjectManager.Player.ServerPosition, true) <
                    Math.Pow(range <= 0 ? Orbwalking.GetRealAutoAttackRange(target) : range, 2) &&
                    !IsInvulnerable(target, damageType, ignoreShieldSpells);
         }
@@ -426,7 +426,7 @@ namespace GosuMechanics_Vayne.Common
                         return
                             targets.MinOrDefault(
                                 hero =>
-                                    (rangeCheckFrom.HasValue ? rangeCheckFrom.Value : champion.ServerPosition).Distance(
+                                    (rangeCheckFrom.HasValue ? rangeCheckFrom.Value : champion.ServerPosition).Distance6(
                                         hero.ServerPosition, true));
 
                     case TargetingMode.NearMouse:

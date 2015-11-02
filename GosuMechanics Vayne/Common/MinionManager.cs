@@ -107,7 +107,7 @@ namespace GosuMechanics_Vayne.Common
         {
             var result = new Vector2();
             var minionCount = 0;
-            var startPos = ObjectManager.Player.ServerPosition.To2D();
+            var startPos = ObjectManager.Player.ServerPosition.To2D2();
 
             range = range * range;
 
@@ -126,7 +126,7 @@ namespace GosuMechanics_Vayne.Common
                     {
                         var circle = MEC.GetMec(subGroup);
 
-                        if (circle.Radius <= width && circle.Center.Distance(startPos, true) <= range)
+                        if (circle.Radius <= width && circle.Center.Distance7(startPos, true) <= range)
                         {
                             minionCount = subGroup.Count;
                             return new FarmLocation(circle.Center, minionCount);
@@ -138,9 +138,9 @@ namespace GosuMechanics_Vayne.Common
             {
                 foreach (var pos in minionPositions)
                 {
-                    if (pos.Distance(startPos, true) <= range)
+                    if (pos.Distance7(startPos, true) <= range)
                     {
-                        var count = minionPositions.Count(pos2 => pos.Distance(pos2, true) <= width * width);
+                        var count = minionPositions.Count(pos2 => pos.Distance7(pos2, true) <= width * width);
 
                         if (count >= minionCount)
                         {
@@ -161,7 +161,7 @@ namespace GosuMechanics_Vayne.Common
         {
             var result = new Vector2();
             var minionCount = 0;
-            var startPos = ObjectManager.Player.ServerPosition.To2D();
+            var startPos = ObjectManager.Player.ServerPosition.To2D2();
 
             var posiblePositions = new List<Vector2>();
             posiblePositions.AddRange(minionPositions);
@@ -180,9 +180,9 @@ namespace GosuMechanics_Vayne.Common
 
             foreach (var pos in posiblePositions)
             {
-                if (pos.Distance(startPos, true) <= range * range)
+                if (pos.Distance7(startPos, true) <= range * range)
                 {
-                    var endPos = startPos + range * (pos - startPos).Normalized();
+                    var endPos = startPos + range * (pos - startPos).Normalized2();
 
                     var count =
                         minionPositions.Count(pos2 => pos2.Distance(startPos, endPos, true, true) <= width * width);
@@ -208,7 +208,7 @@ namespace GosuMechanics_Vayne.Common
             SkillshotType stype,
             Vector3 rangeCheckFrom = new Vector3())
         {
-            from = from.To2D().IsValid() ? from : ObjectManager.Player.ServerPosition;
+            from = from.To2D2().IsValid() ? from : ObjectManager.Player.ServerPosition;
 
             return (from minion in minions
                     select
@@ -227,7 +227,7 @@ namespace GosuMechanics_Vayne.Common
                             })
                 into pos
                     where pos.Hitchance >= HitChance.High
-                    select pos.UnitPosition.To2D()).ToList();
+                    select pos.UnitPosition.To2D2()).ToList();
         }
 
         /*

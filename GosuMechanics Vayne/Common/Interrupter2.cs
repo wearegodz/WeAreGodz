@@ -98,7 +98,7 @@ namespace GosuMechanics_Vayne.Common
                 hero =>
                 {
                     if (CastingInterruptableSpell.ContainsKey(hero.NetworkId) &&
-                        !hero.Spellbook.IsCastingSpell &&
+                        //!hero.Spellbook.IsCastingSpell &&
                         !hero.Spellbook.IsChanneling &&
                         !hero.Spellbook.IsCharging)
                     {

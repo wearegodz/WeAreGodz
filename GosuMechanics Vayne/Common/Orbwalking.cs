@@ -234,8 +234,8 @@ namespace GosuMechanics_Vayne.Common
             var myRange = GetRealAutoAttackRange(target);
             return
                 Vector2.DistanceSquared(
-                    (target is Obj_AI_Base) ? ((Obj_AI_Base)target).ServerPosition.To2D() : target.Position.To2D(),
-                    _Player.ServerPosition.To2D()) <= myRange * myRange;
+                    (target is Obj_AI_Base) ? ((Obj_AI_Base)target).ServerPosition.To2D2() : target.Position.To2D2(),
+                    _Player.ServerPosition.To2D2()) <= myRange * myRange;
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace GosuMechanics_Vayne.Common
         {
             var playerPosition = _Player.ServerPosition;
 
-            if (playerPosition.Distance(position, true) < holdAreaRadius * holdAreaRadius)
+            if (playerPosition.Distance6(position, true) < holdAreaRadius * holdAreaRadius)
             {
                 if (_Player.Path.Length > 0)
                 {
@@ -319,9 +319,9 @@ namespace GosuMechanics_Vayne.Common
 
             var point = position;
 
-            if (_Player.Distance(point, true) < 150 * 150)
+            if (_Player.Distance4(point, true) < 150 * 150)
             {
-                point = playerPosition.Extend(position, (randomizeMinDistance ? (_random.NextFloat(0.6f, 1) + 0.2f) * _minDistance : _minDistance)).To3D();
+                point = playerPosition.Extend2(position, (randomizeMinDistance ? (_random.NextFloat(0.6f, 1) + 0.2f) * _minDistance : _minDistance));
             }
             var angle = 0f;
             var currentPath = _Player.GetWaypoints();
@@ -333,8 +333,8 @@ namespace GosuMechanics_Vayne.Common
                 {
                     var v1 = currentPath[1] - currentPath[0];
                     var v2 = movePath[1] - movePath[0];
-                    angle = v1.AngleBetween(v2.To2D());
-                    var distance = movePath.Last().To2D().Distance(currentPath.Last(), true);
+                    angle = v1.AngleBetween2(v2.To2D2());
+                    var distance = movePath.Last().To2D2().Distance7(currentPath.Last(), true);
 
                     if ((angle < 10 && distance < 500 * 500) || distance < 50 * 50)
                     {
@@ -383,7 +383,7 @@ namespace GosuMechanics_Vayne.Common
                             _missileLaunched = false;
 
                             var d = GetRealAutoAttackRange(target) - 65;
-                            if (_Player.Distance(target, true) > d * d && !_Player.IsMelee)
+                            if (_Player.Distance3(target, true) > d * d && !_Player.IsMelee)
                             {
                                 LastAATick = Utils.GameTimeTickCount + Game.Ping + 400 - (int)(ObjectManager.Player.AttackCastDelay * 1000f);
                             }
@@ -651,20 +651,18 @@ namespace GosuMechanics_Vayne.Common
             {
                 _orbwalkingPoint = point;
             }
-
             private bool ShouldWait()
             {
-                return
+                    return
                     ObjectManager.Get<Obj_AI_Minion>()
                         .Any(
                             minion =>
-                                minion.IsValidTarget() && !minion.IsDead && InAutoAttackRange(minion) && minion.Team != GameObjectTeam.Neutral &&
+                                minion.IsValidTarget() && minion.Team != GameObjectTeam.Neutral &&
                                 InAutoAttackRange(minion) && MinionManager.IsMinion(minion, false) &&
                                 HealthPrediction.LaneClearHealthPrediction(
                                     minion, (int)((Player.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay) <=
-                                Player.GetAutoAttackDamage(minion) + 50f);
+                                Player.GetAutoAttackDamage2(minion) * 0.9f);
             }
-
             public virtual AttackableUnit GetTarget()
             {
                 AttackableUnit result = null;
@@ -673,12 +671,11 @@ namespace GosuMechanics_Vayne.Common
                     !SubMenu["Orbwalker2"]["PriorizeFarm"].Cast<CheckBox>().CurrentValue)
                 {
                     var target = TargetSelector2.GetTarget(Player.GetAutoAttackRange(), TargetSelector2.DamageType.Physical);
-                    if (target != null && InAutoAttackRange(target) && !target.IsDead)
+                    if (target != null && InAutoAttackRange(target))
                     {
                         return target;
                     }
                 }
-
                 /*Killable Minion*/
                 if (ActiveMode == OrbwalkingMode.Clear || ActiveMode == OrbwalkingMode.Mixed ||
                     ActiveMode == OrbwalkingMode.LastHit)
@@ -696,7 +693,7 @@ namespace GosuMechanics_Vayne.Common
                     foreach (var minion in MinionList)
                     {
                         var t = (int)(Player.AttackCastDelay * 1000) - 100 + Game.Ping / 2 +
-                                1000 * (int)Math.Max(0, Player.Distance(minion) - Player.BoundingRadius) / (int)GetMyProjectileSpeed();
+                                1000 * (int)Math.Max(0, Player.Distance2(minion) - Player.BoundingRadius) / (int)GetMyProjectileSpeed();
                         var predHealth = HealthPrediction.GetHealthPrediction(minion, t, FarmDelay);
 
                         if (minion.Team != GameObjectTeam.Neutral && (SubMenu["Orbwalker2"]["AttackPetsnTraps"].Cast<CheckBox>().CurrentValue && minion.BaseSkinName != "jarvanivstandard" || MinionManager.IsMinion(minion, SubMenu["Orbwalker2"]["AttackWards"].Cast<CheckBox>().CurrentValue)))
@@ -706,14 +703,13 @@ namespace GosuMechanics_Vayne.Common
                                 FireOnNonKillableMinion(minion);
                             }
 
-                            if (predHealth > 0 && predHealth <= Player.GetAutoAttackDamage(minion, true))
+                            if (predHealth > 0 && predHealth <= Player.GetAutoAttackDamage2(minion, true))
                             {
                                 return minion;
                             }
                         }
                     }
                 }
-
                 //Forced target
                 if (_forcedTarget.IsValidTarget() && InAutoAttackRange(_forcedTarget))
                 {
@@ -749,7 +745,7 @@ namespace GosuMechanics_Vayne.Common
                 if (ActiveMode != OrbwalkingMode.LastHit)
                 {
                     var target = TargetSelector2.GetTarget(Player.GetAutoAttackRange(), TargetSelector2.DamageType.Physical);
-                    if (target.IsValidTarget() && InAutoAttackRange(target) && !target.IsDead)
+                    if (target.IsValidTarget() && InAutoAttackRange(target))
                     {
                         return target;
                     }
@@ -782,7 +778,7 @@ namespace GosuMechanics_Vayne.Common
                         {
                             var predHealth = HealthPrediction.LaneClearHealthPrediction(
                                 _prevMinion, (int)((Player.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay);
-                            if (predHealth >= 2 * Player.GetAutoAttackDamage(_prevMinion) ||
+                            if (predHealth >= 2 * Player.GetAutoAttackDamage2(_prevMinion) ||
                                 Math.Abs(predHealth - _prevMinion.Health) < float.Epsilon)
                             {
                                 return _prevMinion;
@@ -799,7 +795,7 @@ namespace GosuMechanics_Vayne.Common
                                       HealthPrediction.LaneClearHealthPrediction(
                                           minion, (int)((Player.AttackDelay * 1000) * LaneClearWaitTimeMod), FarmDelay)
                                   where
-                                      predHealth >= 2 * Player.GetAutoAttackDamage(minion) ||
+                                      predHealth >= 2 * Player.GetAutoAttackDamage2(minion) ||
                                       Math.Abs(predHealth - minion.Health) < float.Epsilon
                                   select minion).MaxOrDefault(m => !MinionManager.IsMinion(m, true) ? float.MaxValue : m.Health);
 
@@ -830,7 +826,7 @@ namespace GosuMechanics_Vayne.Common
 
                     var target = GetTarget();
                     Orbwalk(
-                        target, (_orbwalkingPoint.To2D().IsValid()) ? _orbwalkingPoint : Game.CursorPos,
+                        target, (_orbwalkingPoint.To2D2().IsValid()) ? _orbwalkingPoint : Game.CursorPos,
                         SubMenu["Orbwalker2"]["ExtraWindup"].Cast<Slider>().CurrentValue,
                         SubMenu["Orbwalker2"]["HoldPosRadius"].Cast<Slider>().CurrentValue);
                 }

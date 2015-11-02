@@ -10,7 +10,7 @@ using System.Text;
 using System.Windows.Input;
 using System.Threading.Tasks;
 using EloBuddy;
-using EloBuddy.SDK;
+//using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
@@ -655,7 +655,7 @@ namespace GosuMechanics_Vayne.Common
                             gapcloser =>
                                 gapcloser.SkillType == GapcloserType.Targeted ||
                                 (gapcloser.SkillType == GapcloserType.Skillshot &&
-                                 ObjectManager.Player.Distance(gapcloser.Sender, true) < 250000))) // 500 * 500
+                                 ObjectManager.Player.Distance2(gapcloser.Sender, true) < 250000))) // 500 * 500
             {
                 OnEnemyGapcloser(gapcloser);
             }

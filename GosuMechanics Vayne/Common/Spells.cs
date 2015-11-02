@@ -130,13 +130,13 @@ namespace GosuMechanics_Vayne.Common
 
         public Vector3 From
         {
-            get { return !_from.To2D().IsValid() ? ObjectManager.Player.ServerPosition : _from; }
+            get { return !_from.To2D2().IsValid() ? ObjectManager.Player.ServerPosition : _from; }
             set { _from = value; }
         }
 
         public Vector3 RangeCheckFrom
         {
-            get { return !_rangeCheckFrom.To2D().IsValid() ? ObjectManager.Player.ServerPosition : _rangeCheckFrom; }
+            get { return !_rangeCheckFrom.To2D2().IsValid() ? ObjectManager.Player.ServerPosition : _rangeCheckFrom; }
             set { _rangeCheckFrom = value; }
         }
 
@@ -239,7 +239,7 @@ namespace GosuMechanics_Vayne.Common
             {
                 if (IsCharging)
                 {
-                    Cast(args.StartPosition.To2D());
+                    Cast(args.StartPosition.To2D2());
                 }
             }
         }
@@ -324,7 +324,7 @@ namespace GosuMechanics_Vayne.Common
             if (!IsSkillshot)
             {
                 //Target out of range
-                if (RangeCheckFrom.Distance(unit.ServerPosition, true) > RangeSqr)
+                if (RangeCheckFrom.Distance6(unit.ServerPosition, true) > RangeSqr)
                 {
                     return CastStates.OutOfRange;
                 }
@@ -372,13 +372,13 @@ namespace GosuMechanics_Vayne.Common
             }
 
             //Target out of range.
-            if (RangeCheckFrom.Distance(prediction.CastPosition, true) > RangeSqr)
+            if (RangeCheckFrom.Distance6(prediction.CastPosition, true) > RangeSqr)
             {
                 return CastStates.OutOfRange;
             }
 
             //Target is valid.
-            if (RangeCheckFrom.Distance(prediction.CastPosition, true) <= RangeSqr && !unit.IsDead && unit.IsValid)
+            if (RangeCheckFrom.Distance6(prediction.CastPosition, true) <= RangeSqr && !unit.IsDead && unit.IsValid)
             {
                 return CastStates.IsInValidTarget;
             }
@@ -429,7 +429,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public bool CastOnUnit(Obj_AI_Base unit, bool packetCast = false)
         {
-            if (!Slot.IsReady() || From.Distance(unit.ServerPosition, true) > RangeSqr || (_menu["LimitCastingAttempts"].Cast<CheckBox>().CurrentValue && Utils.TickCount - LastCastAttemptT < (70 + Math.Min(60, Game.Ping))))
+            if (!Slot.IsReady() || From.Distance6(unit.ServerPosition, true) > RangeSqr || (_menu["LimitCastingAttempts"].Cast<CheckBox>().CurrentValue && Utils.TickCount - LastCastAttemptT < (70 + Math.Min(60, Game.Ping))))
             {
                 return false;
             }
@@ -552,7 +552,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public float GetHealthPrediction(Obj_AI_Base unit)
         {
-            var time = (int)(Delay * 1000 + From.Distance(unit.ServerPosition) / Speed - 100);
+            var time = (int)(Delay * 1000 + From.Distance6(unit.ServerPosition) / Speed - 100);
             return HealthPrediction.GetHealthPrediction(unit, time);
         }
 
@@ -656,25 +656,25 @@ namespace GosuMechanics_Vayne.Common
             switch (Type)
             {
                 case SkillshotType.SkillshotCircle:
-                    if (point.To2D().Distance(castPosition, true) < WidthSqr)
+                    if (point.To2D2().Distance8(castPosition, true) < WidthSqr)
                     {
                         return true;
                     }
                     break;
 
                 case SkillshotType.SkillshotLine:
-                    if (point.To2D().Distance(castPosition.To2D(), From.To2D(), true, true) <
+                    if (point.To2D2().Distance(castPosition.To2D2(), From.To2D2(), true, true) <
                         Math.Pow(Width + extraWidth, 2))
                     {
                         return true;
                     }
                     break;
                 case SkillshotType.SkillshotCone:
-                    var edge1 = (castPosition.To2D() - From.To2D()).Rotated(-Width / 2);
-                    var edge2 = edge1.Rotated(Width);
-                    var v = point.To2D() - From.To2D();
-                    if (point.To2D().Distance(From, true) < RangeSqr && edge1.CrossProduct(v) > 0 &&
-                        v.CrossProduct(edge2) > 0)
+                    var edge1 = (castPosition.To2D2() - From.To2D2()).Rotated2(-Width / 2);
+                    var edge2 = edge1.Rotated2(Width);
+                    var v = point.To2D2() - From.To2D2();
+                    if (point.To2D2().Distance8(From, true) < RangeSqr && edge1.CrossProduct2(v) > 0 &&
+                        v.CrossProduct2(edge2) > 0)
                     {
                         return true;
                     }
@@ -698,7 +698,7 @@ namespace GosuMechanics_Vayne.Common
         public bool IsInRange(GameObject obj, float range = -1)
         {
             return IsInRange(
-                obj is Obj_AI_Base ? (obj as Obj_AI_Base).ServerPosition.To2D() : obj.Position.To2D(), range);
+                obj is Obj_AI_Base ? (obj as Obj_AI_Base).ServerPosition.To2D2() : obj.Position.To2D2(), range);
         }
 
         /// <summary>
@@ -706,7 +706,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public bool IsInRange(Vector3 point, float range = -1)
         {
-            return IsInRange(point.To2D(), range);
+            return IsInRange(point.To2D2(), range);
         }
 
         /// <summary>
@@ -714,7 +714,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public bool IsInRange(Vector2 point, float range = -1)
         {
-            return RangeCheckFrom.To2D().Distance(point, true) < (range < 0 ? RangeSqr : range * range);
+            return RangeCheckFrom.To2D2().Distance7(point, true) < (range < 0 ? RangeSqr : range * range);
         }
 
         /// <summary>

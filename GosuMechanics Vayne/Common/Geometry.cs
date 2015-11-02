@@ -5,7 +5,7 @@ using ClipperLib;
 using SharpDX;
 using System.Threading.Tasks;
 using EloBuddy;
-using EloBuddy.SDK;
+//using EloBuddy.SDK;
 using Color = System.Drawing.Color;
 
 namespace GosuMechanics_Vayne.Common
@@ -15,7 +15,7 @@ namespace GosuMechanics_Vayne.Common
         //Obj_AI_Base class extended methods:
         public static float Distance1(Obj_AI_Base anotherUnit, bool squared = false)
         {
-            return ObjectManager.Player.Distance(anotherUnit, squared);
+            return ObjectManager.Player.Distance2(anotherUnit, squared);
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance2(this Obj_AI_Base unit, Obj_AI_Base anotherUnit, bool squared = false)
         {
-            return unit.ServerPosition.To2D().Distance(anotherUnit.ServerPosition.To2D(), squared);
+            return unit.ServerPosition.To2D2().Distance7(anotherUnit.ServerPosition.To2D2(), squared);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance3(this Obj_AI_Base unit, AttackableUnit anotherUnit, bool squared = false)
         {
-            return unit.ServerPosition.To2D().Distance(anotherUnit.Position.To2D(), squared);
+            return unit.ServerPosition.To2D2().Distance7(anotherUnit.Position.To2D2(), squared);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance4(this Obj_AI_Base unit, Vector3 point, bool squared = false)
         {
-            return unit.ServerPosition.To2D().Distance(point.To2D(), squared);
+            return unit.ServerPosition.To2D2().Distance7(point.To2D2(), squared);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance5(this Obj_AI_Base unit, Vector2 point, bool squared = false)
         {
-            return unit.ServerPosition.To2D().Distance(point, squared);
+            return unit.ServerPosition.To2D2().Distance7(point, squared);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance6(this Vector3 v, Vector3 other, bool squared = false)
         {
-            return v.To2D().Distance(other, squared);
+            return v.To2D2().Distance8(other, squared);
         }
 
         //Vector2 class extended methods:
@@ -135,7 +135,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance8(this Vector2 v, Vector3 to, bool squared = false)
         {
-            return v.Distance(to.To2D(), squared);
+            return v.Distance7(to.To2D2(), squared);
         }
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static float Distance9(this Vector2 v, Obj_AI_Base to, bool squared = false)
         {
-            return v.Distance(to.ServerPosition.To2D(), squared);
+            return v.Distance7(to.ServerPosition.To2D2(), squared);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace GosuMechanics_Vayne.Common
             bool onlyIfOnSegment = false,
             bool squared = false)
         {
-            var objects = point.ProjectOn(segmentStart, segmentEnd);
+            var objects = point.ProjectOn2(segmentStart, segmentEnd);
 
             if (objects.IsOnSegment || onlyIfOnSegment == false)
             {
@@ -183,22 +183,22 @@ namespace GosuMechanics_Vayne.Common
 
         public static Vector2 Extend2(this Vector2 v, Vector2 to, float distance)
         {
-            return v + distance * (to - v).Normalized();
+            return v + distance * (to - v).Normalized2();
         }
 
         public static Vector3 Extend2(this Vector3 v, Vector3 to, float distance)
         {
-            return v + distance * (to - v).Normalized();
+            return v + distance * (to - v).Normalized2();
         }
 
         public static Vector2 Shorten(this Vector2 v, Vector2 to, float distance)
         {
-            return v - distance * (to - v).Normalized();
+            return v - distance * (to - v).Normalized2();
         }
 
         public static Vector3 Shorten(this Vector3 v, Vector3 to, float distance)
         {
-            return v - distance * (to - v).Normalized();
+            return v - distance * (to - v).Normalized2();
         }
 
         public static Vector3 SwitchYZ(this Vector3 v)
@@ -496,7 +496,7 @@ namespace GosuMechanics_Vayne.Common
             var distance = 0f;
             for (var i = 0; i < path.Count - 1; i++)
             {
-                distance += path[i].Distance(path[i + 1]);
+                distance += path[i].Distance7(path[i + 1]);
             }
             return distance;
         }
@@ -504,9 +504,9 @@ namespace GosuMechanics_Vayne.Common
         /// <summary>
         ///     Converts a 3D path to 2D
         /// </summary>
-        public static List<Vector2> To2D(this List<Vector3> path)
+        public static List<Vector2> To2D2(this List<Vector3> path)
         {
-            return path.Select(point => point.To2D()).ToList();
+            return path.Select(point => point.To2D2()).ToList();
         }
 
         /// <summary>
@@ -514,7 +514,7 @@ namespace GosuMechanics_Vayne.Common
         /// </summary>
         public static Vector2[] CircleCircleIntersection(Vector2 center1, Vector2 center2, float radius1, float radius2)
         {
-            var D = center1.Distance(center2);
+            var D = center1.Distance7(center2);
             //The Circles dont intersect:
             if (D > radius1 + radius2 || (D <= Math.Abs(radius1 - radius2)))
             {
@@ -523,10 +523,10 @@ namespace GosuMechanics_Vayne.Common
 
             var A = (radius1 * radius1 - radius2 * radius2 + D * D) / (2 * D);
             var H = (float)Math.Sqrt(radius1 * radius1 - A * A);
-            var Direction = (center2 - center1).Normalized();
+            var Direction = (center2 - center1).Normalized2();
             var PA = center1 + A * Direction;
-            var S1 = PA + H * Direction.Perpendicular();
-            var S2 = PA - H * Direction.Perpendicular();
+            var S1 = PA + H * Direction.Perpendicular2();
+            var S2 = PA - H * Direction.Perpendicular2();
             return new[] { S1, S2 };
         }
 
@@ -667,10 +667,10 @@ namespace GosuMechanics_Vayne.Common
             {
                 var from = self[i];
                 var to = self[i + 1];
-                var d = (int)to.Distance(from);
+                var d = (int)to.Distance7(from);
                 if (d > distance)
                 {
-                    return from + distance * (to - from).Normalized();
+                    return from + distance * (to - from).Normalized2();
                 }
                 distance -= d;
             }
@@ -741,7 +741,7 @@ namespace GosuMechanics_Vayne.Common
 
             public void Add(Vector3 point)
             {
-                Points.Add(point.To2D());
+                Points.Add(point.To2D2());
             }
 
             public void Add(Polygon polygon)
@@ -777,12 +777,12 @@ namespace GosuMechanics_Vayne.Common
 
             public bool IsInside(Vector3 point)
             {
-                return !IsOutside(point.To2D());
+                return !IsOutside(point.To2D2());
             }
 
             public bool IsInside(GameObject point)
             {
-                return !IsOutside(point.Position.To2D());
+                return !IsOutside(point.Position.To2D2());
             }
 
             public bool IsOutside(Vector2 point)
@@ -800,13 +800,13 @@ namespace GosuMechanics_Vayne.Common
                 private readonly int _quality;
 
                 public Arc(Vector3 start, Vector3 direction, float angle, float radius, int quality = 20)
-                    : this(start.To2D(), direction.To2D(), angle, radius, quality)
+                    : this(start.To2D2(), direction.To2D2(), angle, radius, quality)
                 { }
 
                 public Arc(Vector2 start, Vector2 direction, float angle, float radius, int quality = 20)
                 {
                     StartPos = start;
-                    EndPos = (direction - start).Normalized();
+                    EndPos = (direction - start).Normalized2();
                     Angle = angle;
                     Radius = radius;
                     _quality = quality;
@@ -817,10 +817,10 @@ namespace GosuMechanics_Vayne.Common
                 {
                     Points.Clear();
                     var outRadius = (Radius + offset) / (float)Math.Cos(2 * Math.PI / _quality);
-                    var side1 = EndPos.Rotated(-Angle * 0.5f);
+                    var side1 = EndPos.Rotated2(-Angle * 0.5f);
                     for (var i = 0; i <= _quality; i++)
                     {
-                        var cDirection = side1.Rotated(i * Angle / _quality).Normalized();
+                        var cDirection = side1.Rotated2(i * Angle / _quality).Normalized2();
                         Points.Add(
                             new Vector2(StartPos.X + outRadius * cDirection.X, StartPos.Y + outRadius * cDirection.Y));
                     }
@@ -833,11 +833,11 @@ namespace GosuMechanics_Vayne.Common
                 public Vector2 LineEnd;
                 public float Length
                 {
-                    get { return LineStart.Distance(LineEnd); }
-                    set { LineEnd = (LineEnd - LineStart).Normalized() * value + LineStart; }
+                    get { return LineStart.Distance7(LineEnd); }
+                    set { LineEnd = (LineEnd - LineStart).Normalized2() * value + LineStart; }
                 }
 
-                public Line(Vector3 start, Vector3 end, float length = -1) : this(start.To2D(), end.To2D(), length) { }
+                public Line(Vector3 start, Vector3 end, float length = -1) : this(start.To2D2(), end.To2D2(), length) { }
 
                 public Line(Vector2 start, Vector2 end, float length = -1)
                 {
@@ -864,7 +864,7 @@ namespace GosuMechanics_Vayne.Common
                 public float Radius;
                 private readonly int _quality;
 
-                public Circle(Vector3 center, float radius, int quality = 20) : this(center.To2D(), radius, quality) { }
+                public Circle(Vector3 center, float radius, int quality = 20) : this(center.To2D2(), radius, quality) { }
 
                 public Circle(Vector2 center, float radius, int quality = 20)
                 {
@@ -892,12 +892,12 @@ namespace GosuMechanics_Vayne.Common
 
             public class Rectangle : Polygon
             {
-                public Vector2 Direction { get { return (End - Start).Normalized(); } }
-                public Vector2 Perpendicular { get { return Direction.Perpendicular(); } }
+                public Vector2 Direction { get { return (End - Start).Normalized2(); } }
+                public Vector2 Perpendicular { get { return Direction.Perpendicular2(); } }
                 public Vector2 End;
                 public Vector2 Start;
                 public float Width;
-                public Rectangle(Vector3 start, Vector3 end, float width) : this(start.To2D(), end.To2D(), width) { }
+                public Rectangle(Vector3 start, Vector3 end, float width) : this(start.To2D2(), end.To2D2(), width) { }
 
                 public Rectangle(Vector2 start, Vector2 end, float width)
                 {
@@ -929,7 +929,7 @@ namespace GosuMechanics_Vayne.Common
                 private readonly int _quality;
 
                 public Ring(Vector3 center, float innerRadius, float outerRadius, int quality = 20)
-                    : this(center.To2D(), innerRadius, outerRadius, quality)
+                    : this(center.To2D2(), innerRadius, outerRadius, quality)
                 { }
 
                 public Ring(Vector2 center, float innerRadius, float outerRadius, int quality = 20)
@@ -973,13 +973,13 @@ namespace GosuMechanics_Vayne.Common
                 private readonly int _quality;
 
                 public Sector(Vector3 center, Vector3 direction, float angle, float radius, int quality = 20)
-                    : this(center.To2D(), direction.To2D(), angle, radius, quality)
+                    : this(center.To2D2(), direction.To2D2(), angle, radius, quality)
                 { }
 
                 public Sector(Vector2 center, Vector2 direction, float angle, float radius, int quality = 20)
                 {
                     Center = center;
-                    Direction = (direction - center).Normalized();
+                    Direction = (direction - center).Normalized2();
                     Angle = angle;
                     Radius = radius;
                     _quality = quality;
@@ -990,10 +990,10 @@ namespace GosuMechanics_Vayne.Common
                     Points.Clear();
                     var outRadius = (Radius + offset) / (float)Math.Cos(2 * Math.PI / _quality);
                     Points.Add(Center);
-                    var side1 = Direction.Rotated(-Angle * 0.5f);
+                    var side1 = Direction.Rotated2(-Angle * 0.5f);
                     for (var i = 0; i <= _quality; i++)
                     {
-                        var cDirection = side1.Rotated(i * Angle / _quality).Normalized();
+                        var cDirection = side1.Rotated2(i * Angle / _quality).Normalized2();
                         Points.Add(new Vector2(Center.X + outRadius * cDirection.X, Center.Y + outRadius * cDirection.Y));
                     }
                 }

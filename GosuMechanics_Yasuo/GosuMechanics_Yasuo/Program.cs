@@ -94,7 +94,7 @@ namespace GosuMechanics_Yasuo
 
             SteelTempest = new Spell.Skillshot(SpellSlot.Q, 450, EloBuddy.SDK.Enumerations.SkillShotType.Linear, (int)250f, (int)8700f, (int)15f);
 
-            Q2 = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, (int)Variables.Q2Delay, 1200, 90)
+            Q2 = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, (int)250f, 1200, 90)
             {
                 AllowedCollisionCount = int.MaxValue
             };

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,7 +50,6 @@ namespace GosuMechanics_Yasuo
         public static void Combo()
         {
             var TsTarget = TargetSelector2.GetTarget(1300, DamageType.Physical);
-            Program.orbwalker.ForceTarget(TsTarget);
 
             if (TsTarget == null)
             {
@@ -64,15 +63,15 @@ namespace GosuMechanics_Yasuo
                     PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
                     if (!Program.isDashing() && Program.SteelTempest.Range == 1000)
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                        Program.SteelTempest.Cast(QPred.CastPosition);
                     }
                     else if (Program.SteelTempest.Range == 1000 && Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                        Program.SteelTempest.Cast(QPred.CastPosition);
                     }
                     else if (!Program.Q3READY(Program.myHero) && Program.SteelTempest.Range == 475 )
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                        Program.SteelTempest.Cast(QPred.CastPosition);
                     }
                 }
 
@@ -260,7 +259,6 @@ namespace GosuMechanics_Yasuo
                 Program.E.Cast(bestMinion);
             }
             var TsTarget = TargetSelector2.GetTarget(1300, DamageType.Physical);
-            Program.orbwalker.ForceTarget(TsTarget);
 
             if (TsTarget == null)
             {
@@ -274,11 +272,11 @@ namespace GosuMechanics_Yasuo
                     PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
                     if (!Program.isDashing())
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                        Program.SteelTempest.Cast(QPred.CastPosition);
                     }
                     else if (Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                        Program.SteelTempest.Cast(QPred.CastPosition);
                     }
                 }
                 if (TsTarget == null)
@@ -288,7 +286,7 @@ namespace GosuMechanics_Yasuo
                 PredictionResult QPred2 = Program.SteelTempest.GetPrediction(TsTarget);
                 if (!Program.Q3READY(Program.myHero) && Program.SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue)
                 {
-                    Program.SteelTempest.Cast(QPred2.CastPosition); Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+                    Program.SteelTempest.Cast(QPred2.CastPosition);
                 }
             }
         }

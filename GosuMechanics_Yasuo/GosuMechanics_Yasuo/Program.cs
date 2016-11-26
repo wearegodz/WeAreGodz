@@ -937,7 +937,7 @@ namespace GosuMechanics_Yasuo
             {
                 Drawing.DrawCircle(myHero.Position, SteelTempest.Range, System.Drawing.Color.Red);
             }
-            if (SubMenu["Misc"]["DrawQ3"].Cast<CheckBox>().CurrentValue && !Q2t.IsReady())
+            if (SubMenu["Misc"]["DrawQ3"].Cast<CheckBox>().CurrentValue && !Q2.IsReady())
             {
                 Drawing.DrawCircle(myHero.Position, 1100, System.Drawing.Color.Red);
             }

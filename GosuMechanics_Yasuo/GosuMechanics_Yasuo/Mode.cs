@@ -276,7 +276,7 @@ namespace GosuMechanics_Yasuo
                     }
                     else if (Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition);
+                        Program.Q2.Cast(QPred.CastPosition);
                     }
                 }
                 if (TsTarget == null)

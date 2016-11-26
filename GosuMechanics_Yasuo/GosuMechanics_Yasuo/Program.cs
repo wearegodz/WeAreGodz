@@ -20,6 +20,7 @@ namespace GosuMechanics_Yasuo
         public static YasWall wall = new YasWall();
         public static Menu menu;
         public static Spell.Skillshot SteelTempest;
+        public static Spell.Skillshot Q2;
         public static Spell.Targeted E;
         public static Spell.Skillshot W;
         public static Spell.Active R;
@@ -92,6 +93,12 @@ namespace GosuMechanics_Yasuo
             Chat.Print("<font color=\"#F20000\"><b>GosuMechanics Yasuo:</b></font> Loaded!");
 
             SteelTempest = new Spell.Skillshot(SpellSlot.Q, 450, EloBuddy.SDK.Enumerations.SkillShotType.Linear, (int)250f, (int)8700f, (int)15f);
+
+            Q2 = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Linear, (int)Variables.Q2Delay, 1200, 90)
+            {
+                AllowedCollisionCount = int.MaxValue
+            };
+
             W = new Spell.Skillshot(SpellSlot.W, 400, EloBuddy.SDK.Enumerations.SkillShotType.Cone);
             E = new Spell.Targeted(SpellSlot.E, 475);
             R = new Spell.Active(SpellSlot.R, 1200);
@@ -318,7 +325,7 @@ namespace GosuMechanics_Yasuo
             {
                 if (buff.Buff.Name == "yasuoq3w")
                 {
-                    SteelTempest = new Spell.Skillshot(SpellSlot.Q, 1000, EloBuddy.SDK.Enumerations.SkillShotType.Linear, (int)250f, (int)1200f, (int)90f);
+                    Q2 = new Spell.Skillshot(SpellSlot.Q, 1000, EloBuddy.SDK.Enumerations.SkillShotType.Linear, (int)250f, (int)1200f, (int)90f);
                 }
             }
         }
@@ -374,12 +381,12 @@ namespace GosuMechanics_Yasuo
             if (Q3READY(myHero) && SubMenu["Misc"]["UseEInterrupt"].Cast<CheckBox>().CurrentValue && interrupt.Any(x => x.Contains(args.SData.Name)) &&
                SubMenu["int"][args.SData.Name].Cast<CheckBox>().CurrentValue && myHero.Distance(sender) <= 900)
             {
-                SteelTempest.Cast(sender);
+                Q2.Cast(sender);
             }
 
             if (Q3READY(myHero) && gapcloser.Any(str => str.Contains(args.SData.Name)) && SubMenu["gap"][args.SData.Name].Cast<CheckBox>().CurrentValue && args.Target.IsMe)
             {
-                SteelTempest.Cast(sender);
+                Q2.Cast(sender);
             }
 
             if (Q3READY(myHero) && notarget.Any(str => str.Contains(args.SData.Name)) &&
@@ -388,7 +395,7 @@ namespace GosuMechanics_Yasuo
             {
                 if (ObjectManager.Player.Distance(args.End) < ObjectManager.Player.Distance(sender.Position))
                 {
-                    SteelTempest.Cast(sender);
+                    Q2.Cast(sender);
                 }
             }
 
@@ -401,7 +408,7 @@ namespace GosuMechanics_Yasuo
                     {
                         if (pant.IsValidTarget(E.Range))
                         {
-                            SteelTempest.Cast(pant);
+                            Q2.Cast(pant);
                         }
                     }
                 }
@@ -556,7 +563,7 @@ namespace GosuMechanics_Yasuo
 
             if (SubMenu["Harass"]["AutoQ"].Cast<KeyBind>().CurrentValue || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee))
             {
-                var TsTarget = TargetSelector2.GetTarget(SteelTempest.Range, DamageType.Physical);
+                var TsTarget = TargetSelector2.GetTarget(Q2.Range, DamageType.Physical);
 
                 if (TsTarget == null)
                 {
@@ -567,11 +574,11 @@ namespace GosuMechanics_Yasuo
                 {
                     PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
 
-                    if (SteelTempest.IsReady() && SteelTempest.Range == 1000 && SubMenu["Harass"]["Q3"].Cast<CheckBox>().CurrentValue && !isDashing())
+                    if (Q2.IsReady() && Q2.Range == 1000 && SubMenu["Harass"]["Q3"].Cast<CheckBox>().CurrentValue && !isDashing())
                     {
-                        SteelTempest.Cast(QPred.CastPosition);
+                        Q2.Cast(QPred.CastPosition);
                     }
-                    else if (!Q3READY(myHero) && SteelTempest.IsReady() && SteelTempest.Range == 475 && SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && !isDashing())
+                    else if (!Q3READY(myHero) && SteelTempest.IsReady() && SteelTempest.Range == 450 && SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && !isDashing())
                     {
                         SteelTempest.Cast(QPred.CastPosition);
                     }
@@ -580,11 +587,11 @@ namespace GosuMechanics_Yasuo
                 {
                     PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
 
-                    if (!UnderTower(myHero.ServerPosition) && SteelTempest.IsReady() && SteelTempest.Range == 1000 && SubMenu["Harass"]["Q3"].Cast<CheckBox>().CurrentValue && !isDashing())
+                    if (!UnderTower(myHero.ServerPosition) && Q2.IsReady() && Q2.Range == 1000 && SubMenu["Harass"]["Q3"].Cast<CheckBox>().CurrentValue && !isDashing())
                     {
-                        SteelTempest.Cast(QPred.CastPosition);
+                        Q2.Cast(QPred.CastPosition);
                     }
-                    if (!Q3READY(myHero) && SteelTempest.IsReady() && SteelTempest.Range == 475 && SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && !isDashing() && !UnderTower(myHero.ServerPosition))
+                    if (!Q3READY(myHero) && SteelTempest.IsReady() && SteelTempest.Range == 450 && SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && !isDashing() && !UnderTower(myHero.ServerPosition))
                     {
                         SteelTempest.Cast(QPred.CastPosition);
                     }
@@ -914,7 +921,7 @@ namespace GosuMechanics_Yasuo
             {
                 Drawing.DrawCircle(myHero.Position, SteelTempest.Range, System.Drawing.Color.Green);
             }
-            if (SubMenu["Misc"]["DrawQ3"].Cast<CheckBox>().CurrentValue && SteelTempest.IsReady())
+            if (SubMenu["Misc"]["DrawQ3"].Cast<CheckBox>().CurrentValue && Q2.IsReady())
             {
                 Drawing.DrawCircle(myHero.Position, 1100, System.Drawing.Color.Green);
             }

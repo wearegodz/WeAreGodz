@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,7 +34,6 @@ namespace GosuMechanics_Yasuo
         public static string[] gapcloser;
         public static string Author = "WeAreGodz";
         public static string AddonName = "GosuMechanics Yasuo";
-        public static Orbwalking.Orbwalker orbwalker;
         public static Dictionary<string, Menu> SubMenu = new Dictionary<string, Menu>() { };
         public static AIHeroClient myHero { get { return ObjectManager.Player; } }
         public static int[] abilitySequence;
@@ -299,8 +298,6 @@ namespace GosuMechanics_Yasuo
                 SubMenu["int"].Add(interrupt[i], new CheckBox(interrupt[i], true));
             }
 
-            orbwalker = new Orbwalking.Orbwalker(menu);
-
             if (myHero.ChampionName == "Yasuo") abilitySequence = new int[] { 1, 3, 2, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2 };
 
             Drawing.OnDraw += OnDraw;
@@ -350,19 +347,19 @@ namespace GosuMechanics_Yasuo
 
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (!sender.IsMe) return;
-            if (args.SData.Name.ToLower().Contains("YasuoQW"))
-            {
-                Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
-            }
-            if (args.SData.Name.ToLower().Contains("yasuoq2w"))
-            {
-                Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
-            }
-            if (args.SData.Name.ToLower().Contains("yasuoq3w"))
-            {
-                Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
-            }
+            //if (!sender.IsMe) return;
+            //if (args.SData.Name.ToLower().Contains("YasuoQW"))
+            //{
+            //    Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+            //}
+            //if (args.SData.Name.ToLower().Contains("yasuoq2w"))
+            //{
+                //Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+            //}
+            //if (args.SData.Name.ToLower().Contains("yasuoq3w"))
+            //{
+                //Core.DelayAction(Orbwalking.ResetAutoAttackTimer, 250);
+            //}
 
             if (sender.IsMe)
             {
@@ -540,30 +537,29 @@ namespace GosuMechanics_Yasuo
             Mode.AutoR();
             Mode.sChoose();
 
-            switch (orbwalker.ActiveMode)
+            if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee))
+                Mode.Flee();
+            else if(Orbwalker.ActiveModesFlags != Orbwalker.ActiveModes.None)
             {
-                case Orbwalking.OrbwalkingMode.Combo:
+                Orbwalker.MoveTo(Game.CursorPos);
+
+                if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
                     Mode.Combo();
-                    break;
-                case Orbwalking.OrbwalkingMode.Mixed:
+
+                if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit))
+                    YasuoFunctions.LastHit();
+                if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass))
                     Mode.Harass();
-                    break;
-                case Orbwalking.OrbwalkingMode.LastHit:
-                    Mode.LastHit();
-                    break;
-                case Orbwalking.OrbwalkingMode.Clear:
-                    Mode.LaneClear();
+                if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.JungleClear))
                     Mode.JungleClear();
-                    break;
-                case Orbwalking.OrbwalkingMode.Flee:
-                    Mode.Flee();
-                    break;
+                if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear))
+                    Mode.LaneClear();
             }
 
-            if (SubMenu["Harass"]["AutoQ"].Cast<KeyBind>().CurrentValue || orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Flee && orbwalker.ActiveMode != Orbwalking.OrbwalkingMode.Flee)
+
+            if (SubMenu["Harass"]["AutoQ"].Cast<KeyBind>().CurrentValue || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee))
             {
                 var TsTarget = TargetSelector2.GetTarget(SteelTempest.Range, DamageType.Physical);
-                orbwalker.ForceTarget(TsTarget);
 
                 if (TsTarget == null)
                 {
@@ -652,7 +648,7 @@ namespace GosuMechanics_Yasuo
             result.casters = new List<Obj_AI_Base>();
 
 
-            if (orbwalker.ActiveMode != Orbwalking.OrbwalkingMode.Combo ||
+            if (!Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) ||
                              point.To3D().CountEnemiesInRange(500) > myHero.HealthPercent % 65)
             {
                 result.IsSafe = false;

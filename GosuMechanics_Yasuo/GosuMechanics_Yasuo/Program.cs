@@ -541,8 +541,6 @@ namespace GosuMechanics_Yasuo
                 Mode.Flee();
             else if(Orbwalker.ActiveModesFlags != Orbwalker.ActiveModes.None)
             {
-                Orbwalker.MoveTo(Game.CursorPos);
-
                 if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
                     Mode.Combo();
                 if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit))

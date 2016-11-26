@@ -61,11 +61,11 @@ namespace GosuMechanics_Yasuo
                 if (Program.SteelTempest.IsReady() && Program.SubMenu["Combo"]["Q"].Cast<CheckBox>().CurrentValue)
                 {
                     PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
-                    if (!Program.isDashing() && Program.SteelTempest.Range == 1000)
+                    if (!Program.isDashing() && Program.SteelTempest.Range == 900)
                     {
                         Program.SteelTempest.Cast(QPred.CastPosition);
                     }
-                    else if (Program.SteelTempest.Range == 1000 && Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
+                    else if (Program.SteelTempest.Range == 900 && Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
                     {
                         Program.SteelTempest.Cast(QPred.CastPosition);
                     }

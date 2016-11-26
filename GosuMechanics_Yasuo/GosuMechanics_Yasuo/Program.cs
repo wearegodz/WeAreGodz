@@ -91,7 +91,7 @@ namespace GosuMechanics_Yasuo
             if (myHero.Hero != Champion.Yasuo) { return; }
             Chat.Print("<font color=\"#F20000\"><b>GosuMechanics Yasuo:</b></font> Loaded!");
 
-            SteelTempest = new Spell.Skillshot(SpellSlot.Q, 475, EloBuddy.SDK.Enumerations.SkillShotType.Linear, (int)250f, (int)8700f, (int)15f);
+            SteelTempest = new Spell.Skillshot(SpellSlot.Q, 450, EloBuddy.SDK.Enumerations.SkillShotType.Linear, (int)250f, (int)8700f, (int)15f);
             W = new Spell.Skillshot(SpellSlot.W, 400, EloBuddy.SDK.Enumerations.SkillShotType.Cone);
             E = new Spell.Targeted(SpellSlot.E, 475);
             R = new Spell.Active(SpellSlot.R, 1200);

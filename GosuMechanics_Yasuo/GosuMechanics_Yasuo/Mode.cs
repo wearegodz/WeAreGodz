@@ -58,18 +58,18 @@ namespace GosuMechanics_Yasuo
 
             if (TsTarget != null)
             {
-                if (Program.SteelTempest.IsReady() && Program.SubMenu["Combo"]["Q"].Cast<CheckBox>().CurrentValue)
+                if (Program.Q2.IsReady() && Program.SubMenu["Combo"]["Q"].Cast<CheckBox>().CurrentValue)
                 {
-                    PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
-                    if (!Program.isDashing() && Program.SteelTempest.Range == 900)
+                    PredictionResult QPred = Program.Q2.GetPrediction(TsTarget);
+                    if (!Program.isDashing() && Program.Q2.Range == 900)
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition);
+                        Program.Q2.Cast(QPred.CastPosition);
                     }
-                    else if (Program.SteelTempest.Range == 900 && Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
+                    else if (Program.Q2.Range == 900 && Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition);
+                        Program.Q2.Cast(QPred.CastPosition);
                     }
-                    else if (!Program.Q3READY(Program.myHero) && Program.SteelTempest.Range == 475 )
+                    else if (!Program.Q3READY(Program.myHero) && Program.SteelTempest.Range == 450 )
                     {
                         Program.SteelTempest.Cast(QPred.CastPosition);
                     }
@@ -269,10 +269,10 @@ namespace GosuMechanics_Yasuo
             {
                 if (Program.SteelTempest.IsReady() && Program.SubMenu["Harass"]["Q3"].Cast<CheckBox>().CurrentValue)
                 {
-                    PredictionResult QPred = Program.SteelTempest.GetPrediction(TsTarget);
+                    PredictionResult QPred = Program.Q2.GetPrediction(TsTarget);
                     if (!Program.isDashing())
                     {
-                        Program.SteelTempest.Cast(QPred.CastPosition);
+                        Program.Q2.Cast(QPred.CastPosition);
                     }
                     else if (Program.Q3READY(Program.myHero) && Program.isDashing() && Program.myHero.Distance(TsTarget) <= 250 * 250)
                     {
@@ -308,12 +308,12 @@ namespace GosuMechanics_Yasuo
                         Program.SteelTempest.Cast(minion.ServerPosition);
                     }
                 }
-                if (!minion.IsDead && minion != null && Program.SubMenu["LastHit"]["Q3"].Cast<CheckBox>().CurrentValue && Program.SteelTempest.IsReady() && minion.IsValidTarget() && Program.Q3READY(Program.myHero))
+                if (!minion.IsDead && minion != null && Program.SubMenu["LastHit"]["Q3"].Cast<CheckBox>().CurrentValue && Program.Q2.IsReady() && minion.IsValidTarget() && Program.Q3READY(Program.myHero))
                 {
                     var predHealth = Prediction.Health.GetPrediction(minion, (int)(Program.myHero.Distance(minion.Position) * 1000 / 2000));
                     if (predHealth <= Program.myHero.GetSpellDamage(minion, SpellSlot.Q))
                     {
-                        Program.SteelTempest.Cast(minion.ServerPosition);
+                        Program.Q2.Cast(minion.ServerPosition);
                     }
                 }
                 if (Program.SubMenu["LastHit"]["E"].Cast<CheckBox>().CurrentValue && Program.E.IsReady() && minion.IsValidTarget())
@@ -344,14 +344,14 @@ namespace GosuMechanics_Yasuo
                     var predHealth = Prediction.Health.GetPrediction(minion, (int)(Program.myHero.Distance(minion.Position) * 1000 / 2000));
                     if (predHealth <= Program.myHero.GetSpellDamage(minion, SpellSlot.Q))
                     {
-                        Program.SteelTempest.Cast(minion.ServerPosition);
+                        Program.Q2.Cast(minion.ServerPosition);
                     }
                     else if (!Program.Q3READY(Program.myHero))
                     {
                         Program.SteelTempest.Cast(minion.ServerPosition);
                     }
                 }
-                if (!minion.IsDead && minion != null && Program.SubMenu["LaneClear"]["Q3"].Cast<CheckBox>().CurrentValue && Program.SteelTempest.IsReady() && minion.IsValidTarget() && Program.Q3READY(Program.myHero))
+                if (!minion.IsDead && minion != null && Program.SubMenu["LaneClear"]["Q3"].Cast<CheckBox>().CurrentValue && Program.Q2.IsReady() && minion.IsValidTarget() && Program.Q3READY(Program.myHero))
                 {
                     var predHealth = Prediction.Health.GetPrediction(minion, (int)(Program.myHero.Distance(minion.Position) * 1000 / 2000));
                     if (predHealth <= Program.myHero.GetSpellDamage(minion, SpellSlot.Q))
@@ -360,7 +360,7 @@ namespace GosuMechanics_Yasuo
                     }
                     else if (Program.Q3READY(Program.myHero))
                     {
-                        Program.SteelTempest.Cast(minion.ServerPosition);
+                        Program.Q2.Cast(minion.ServerPosition);
                     }
                 }
             }

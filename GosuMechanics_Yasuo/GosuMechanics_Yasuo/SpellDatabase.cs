@@ -1522,33 +1522,7 @@ namespace GosuMechanics_Yasuo
                 });
 
             #endregion Jayce
-             
-            #region Jinx
 
-            //TODO: Detect the animation from fow instead of the missile.
-            Spells.Add(
-                new SpellData
-                {
-                    ChampionName = "Jinx",
-                    SpellName = "JinxW",
-                    Slot = SpellSlot.W,
-                    Type = SkillShotType.SkillshotMissileLine,
-                    Delay = 600,
-                    Range = 1500,
-                    Radius = 60,
-                    MissileSpeed = 3300,
-                    FixedRange = true,
-                    AddHitbox = true,
-                    DangerValue = 3,
-                    IsDangerous = true,
-                    MissileSpellName = "JinxWMissile",
-                    EarlyEvade = new[] {EarlyObjects.Allies, EarlyObjects.Minions, EarlyObjects.AllyObjects},
-                    CanBeRemoved = true,
-                    CollisionObjects =
-                        new[]
-                        {CollisionObjectTypes.Champions, CollisionObjectTypes.Minion, CollisionObjectTypes.YasuoWall},
-                });
-                
             #region Jinx
 
             //TODO: Detect the animation from fow instead of the missile.

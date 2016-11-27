@@ -1522,56 +1522,7 @@ namespace GosuMechanics_Yasuo
                 });
 
             #endregion Jayce
-                
-#region Jhin
-
-            Spells.Add(
-                new SpellData
-                {
-                    ChampionName = "Jhin",
-                    SpellName = "JhinW",
-                    Slot = SpellSlot.W,
-                    Type = SkillShotType.SkillshotMissileLine,
-                    Delay = 750,
-                    Range = 2550,
-                    Radius = 40,
-                    MissileSpeed = 5000,
-                    FixedRange = true,
-                    AddHitbox = true,
-                    DangerValue = 3,
-                    IsDangerous = true,
-                    MissileSpellName = "JhinWMissile",
-                    EarlyEvade = new[] { EarlyObjects.Allies, EarlyObjects.AllyObjects },
-                    CanBeRemoved = true,
-                    CollisionObjects =
-                        new[] { CollisionObjectTypes.Champions, CollisionObjectTypes.YasuoWall },
-                });
-
-            Spells.Add(
-                new SpellData
-                {
-                    ChampionName = "Jhin",
-                    SpellName = "JhinRShot",
-                    Slot = SpellSlot.R,
-                    Type = SkillShotType.SkillshotMissileLine,
-                    Delay = 250,
-                    Range = 3500,
-                    Radius = 80,
-                    MissileSpeed = 5000,
-                    FixedRange = true,
-                    AddHitbox = true,
-                    DangerValue = 3,
-                    IsDangerous = true,
-                    MissileSpellName = "JhinRShotMis",
-                    ExtraMissileNames = new[] { "JhinRShotMis4" },
-                    EarlyEvade = new[] { EarlyObjects.Allies, EarlyObjects.Minions, EarlyObjects.AllyObjects },
-                    CanBeRemoved = true,
-                    CollisionObjects =
-                        new[] { CollisionObjectTypes.Champions, CollisionObjectTypes.YasuoWall },
-                });
-
-            #endregion Jhin
-
+             
             #region Jinx
 
             //TODO: Detect the animation from fow instead of the missile.

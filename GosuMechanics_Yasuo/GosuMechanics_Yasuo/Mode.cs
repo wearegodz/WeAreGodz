@@ -69,7 +69,7 @@ namespace GosuMechanics_Yasuo
                     {
                         Program.Q2.Cast(QPred.CastPosition);
                     }
-                    else if (!Program.Q3READY(Program.myHero) && Program.SteelTempest.Range == 450 )
+                    else if (!Program.Q3READY(Program.myHero) && Program.SteelTempest.Range == 450 && !Program.Q2.IsReady())
                     {
                         Program.SteelTempest.Cast(QPred.CastPosition);
                     }
@@ -284,7 +284,7 @@ namespace GosuMechanics_Yasuo
                     return;
                 }
                 PredictionResult QPred2 = Program.SteelTempest.GetPrediction(TsTarget);
-                if (!Program.Q3READY(Program.myHero) && Program.SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue)
+                if (!Program.Q3READY(Program.myHero) && Program.SubMenu["Harass"]["Q"].Cast<CheckBox>().CurrentValue && !Program.Q2.IsReady())
                 {
                     Program.SteelTempest.Cast(QPred2.CastPosition);
                 }
